@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NUO健身 (補登修正版)</title>
+    <title>NUO健身 (可修改紀錄版)</title>
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     <meta name="theme-color" content="#2c3e50">
@@ -18,7 +18,7 @@
             --light: #ecf0f1;
             --grey: #95a5a6;
             --card-bg: #ffffff;
-            --past-mode: #d35400; /* 補登模式深橘色 */
+            --past-mode: #d35400;
         }
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -39,10 +39,11 @@
             border-bottom-right-radius: 20px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             transition: background-color 0.3s;
+            position: relative;
+            z-index: 20;
         }
         .dashboard.past-mode { background: var(--past-mode); }
 
-        /* 日期選擇列 */
         .date-picker-row {
             display: flex;
             justify-content: space-between;
@@ -60,18 +61,10 @@
             font-weight: bold;
             font-family: inherit;
         }
-        .date-input::-webkit-calendar-picker-indicator {
-            filter: invert(1);
-            cursor: pointer;
-        }
+        .date-input::-webkit-calendar-picker-indicator { filter: invert(1); cursor: pointer; }
         .btn-today {
-            background: rgba(255,255,255,0.2);
-            border: none;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-            cursor: pointer;
+            background: rgba(255,255,255,0.2); border: none; color: white;
+            padding: 6px 12px; border-radius: 4px; font-size: 0.9rem; cursor: pointer;
         }
 
         .stats-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
@@ -79,32 +72,28 @@
         .dashboard.past-mode .total-vol { color: #ffe600; }
         .total-label { font-size: 0.8rem; opacity: 0.8; }
 
-        /* 有氧 */
         .cardio-section {
             background: rgba(255,255,255,0.1); padding: 10px; border-radius: 8px; margin-top: 10px;
             display: flex; justify-content: space-between; align-items: center;
         }
         .cardio-input { width: 60px; padding: 5px; border-radius: 4px; border: none; text-align: center; font-size: 1rem; }
 
-        /* 習慣鏈 */
         .habit-tracker { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 15px; }
         .habit-day { aspect-ratio: 1; background: rgba(255,255,255,0.1); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; color: rgba(255,255,255,0.5); }
         .habit-day.active { background: var(--success); color: white; font-weight: bold; box-shadow: 0 0 5px var(--success); }
         .dashboard.past-mode .habit-day.active { background: #ffe600; color: var(--dark); box-shadow: 0 0 5px #ffe600; }
         .habit-day.today { border: 1px solid white; }
-        
         .btn-history { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); color: white; width: 100%; padding: 8px; border-radius: 8px; margin-top: 15px; font-size: 0.9rem; cursor: pointer; }
 
         /* 新增動作區 */
         .add-exercise-bar {
             position: sticky; top: 0; background: #fff; padding: 10px 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 10; display: flex; gap: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); z-index: 100; display: flex; gap: 10px;
         }
         .exercise-select { flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; background: white; }
-        .btn-add-ex { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; }
+        .btn-add-ex { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; cursor: pointer; }
         body.is-past-mode .btn-add-ex { background: var(--past-mode); }
 
-        /* 訓練卡片 */
         .container { padding: 15px; }
         .card {
             background: var(--card-bg); border-radius: 12px; padding: 15px; margin-bottom: 15px;
@@ -115,12 +104,7 @@
         .btn-remove-card { position: absolute; top: 10px; right: 10px; color: #ccc; background: none; border: none; font-size: 1.2rem; padding: 5px; }
         .card-header { margin-bottom: 8px; padding-right: 30px;}
         .exercise-name { font-size: 1.1rem; font-weight: bold; }
-        
-        .exercise-desc-box {
-            background-color: #f8f9fa; border-radius: 6px; padding: 10px; font-size: 0.85rem; color: #555;
-            line-height: 1.5; margin-bottom: 10px; border: 1px solid #eee; white-space: pre-line;
-        }
-
+        .exercise-desc-box { background-color: #f8f9fa; border-radius: 6px; padding: 10px; font-size: 0.85rem; color: #555; line-height: 1.5; margin-bottom: 10px; border: 1px solid #eee; white-space: pre-line; }
         .sets-list { margin: 10px 0; background: #fff; border: 1px solid #eee; border-radius: 6px; padding: 5px; }
         .set-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #eee; font-size: 0.9rem; color: #555; }
         .set-item:last-child { border-bottom: none; }
@@ -134,7 +118,6 @@
         .btn-log { background: var(--dark); color: white; border: none; width: 100%; padding: 12px; border-radius: 6px; font-size: 1rem; font-weight: bold; margin-top: 10px; }
         body.is-past-mode .btn-log { background: var(--past-mode); }
 
-        /* 浮動計時器 */
         .timer-float {
             position: fixed; bottom: 30px; right: 20px; background: var(--dark); color: white;
             width: 60px; height: 60px; border-radius: 50%; display: none;
@@ -143,24 +126,19 @@
             border: 2px solid var(--success); font-size: 0.9rem;
         }
 
-        /* 模態框 */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; flex-direction: column; }
         .modal-content { background: white; padding: 20px; border-radius: 15px; width: 90%; max-width: 400px; text-align: center; max-height: 80vh; overflow-y: auto; }
-
-        /* 收操列表 */
+        
         .cooldown-section { text-align: left; margin-bottom: 15px; }
         .cooldown-title { font-size: 1rem; font-weight: bold; color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 5px; margin-bottom: 10px; }
         .cooldown-item { background: #f9f9f9; padding: 10px; border-radius: 8px; margin-bottom: 8px; display: flex; align-items: flex-start; gap: 10px; }
         .cooldown-icon { font-size: 1.2rem; min-width: 25px; }
         .cooldown-desc { font-size: 0.9rem; color: #555; line-height: 1.4; }
         .cooldown-name { font-weight: bold; color: #333; display: block; margin-bottom: 3px; }
-
-        /* 歷史月曆 */
+        
         .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 20px; }
         .cal-day { aspect-ratio: 1; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-size: 0.9rem; cursor: pointer; }
         .cal-day.has-data { background-color: #d5f5e3; color: var(--success); font-weight: bold; }
-        
-        /* 計時器 */
         .timer-display { font-size: 4rem; font-weight: bold; color: var(--dark); font-variant-numeric: tabular-nums; }
         .timer-controls { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
         .btn-timer { padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; }
@@ -168,6 +146,13 @@
         .btn-add { background: var(--light); color: var(--dark); }
         .close-btn-corner { float: right; font-size: 1.5rem; cursor: pointer; color: #999; }
         .empty-hint { text-align: center; color: #999; margin-top: 30px; }
+
+        /* 歷史紀錄操作按鈕 */
+        .history-item { border-bottom: 1px solid #eee; padding: 8px 0; display: flex; justify-content: space-between; align-items: center; }
+        .history-info { text-align: left; flex: 1; }
+        .history-actions { display: flex; gap: 5px; }
+        .btn-action { background: none; border: none; font-size: 1.1rem; padding: 5px; cursor: pointer; opacity: 0.6; }
+        .btn-action:hover { opacity: 1; transform: scale(1.1); }
     </style>
 </head>
 <body id="bodyTag">
@@ -222,7 +207,6 @@
 <div id="floatTimer" class="timer-float" onclick="openTimerModal()">00:00</div>
 <button class="btn-timer btn-stop" style="position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:90; box-shadow:0 4px 10px rgba(0,0,0,0.2);" onclick="openCooldown()">🧘 結束 & 收操</button>
 
-<!-- 視窗: 計時器 -->
 <div id="timerModal" class="modal">
     <div class="modal-content">
         <h3 style="margin:0; color:#888;">組間休息</h3>
@@ -238,7 +222,6 @@
     </div>
 </div>
 
-<!-- 視窗: 歷史 -->
 <div id="historyModal" class="modal" onclick="if(event.target === this) closeHistoryModal()">
     <div class="modal-content" style="padding:15px;">
         <span class="close-btn-corner" onclick="closeHistoryModal()">&times;</span>
@@ -252,7 +235,20 @@
     </div>
 </div>
 
-<!-- 視窗: 收操 -->
+<!-- 編輯紀錄視窗 (新增) -->
+<div id="editRecordModal" class="modal" onclick="if(event.target === this) document.getElementById('editRecordModal').style.display='none'">
+    <div class="modal-content">
+        <h3>修改紀錄</h3>
+        <div id="editFormContent">
+            <!-- JS 動態生成輸入框 -->
+        </div>
+        <div style="margin-top:15px; display:flex; gap:10px;">
+            <button class="btn-log" style="background:var(--grey);" onclick="document.getElementById('editRecordModal').style.display='none'">取消</button>
+            <button class="btn-log" style="background:var(--success);" onclick="saveEditedRecord()">儲存</button>
+        </div>
+    </div>
+</div>
+
 <div id="cooldownModal" class="modal" onclick="if(event.target === this) document.getElementById('cooldownModal').style.display='none'">
     <div class="modal-content" style="text-align:left; max-height:85vh; width:90%;">
         <span class="close-btn-corner" onclick="document.getElementById('cooldownModal').style.display='none'">&times;</span>
@@ -264,7 +260,76 @@
 </div>
 
 <script>
-    // --- 0. 工具：正確取得當地時間 (修正 Bug 核心) ---
+    // --- 資料庫 ---
+    const exerciseLibrary = {
+        "胸部 (Push)": [
+            {id: "db_bench", name: "啞鈴臥推", desc: "1. 仰臥，雙腳踩實，肩胛骨收緊貼背。\n2. 雙手持鈴於胸線，手肘與身體呈45度。\n3. 吐氣上推至手臂伸直，吸氣慢放。"},
+            {id: "db_incline", name: "上斜臥推", desc: "1. 椅背調至30-45度，專攻上胸。\n2. 落點控制在鎖骨下方，不聳肩。\n3. 手臂保持垂直地面推起。"},
+            {id: "db_fly", name: "啞鈴飛鳥", desc: "1. 手肘微彎固定角度，像抱大樹一樣打開。\n2. 下放至大手臂平行地面即可。\n3. 用胸肌力量夾回，不是用手推。"},
+            {id: "bw_pushup", name: "[徒手] 伏地挺身", desc: "1. 手掌撐地略寬於肩，身體呈直線。\n2. 胸口下沉至接近地板。\n3. 推起時手臂伸直但肘不鎖死。"},
+            {id: "bw_diamond", name: "[徒手] 鑽石伏地挺身", desc: "1. 雙手食指拇指相對呈鑽石狀。\n2. 專注三頭肌與內胸發力。\n3. 難度較高，可採跪姿。"}
+        ],
+        "背部 (Pull)": [
+            {id: "db_row_one", name: "單臂划船", desc: "1. 單手單膝支撐於臥推椅，背部打直。\n2. 將啞鈴向後上方拉至髖部位置。\n3. 下放時讓背肌完全拉伸。"},
+            {id: "db_row_bent", name: "雙手划船", desc: "1. 雙腳與肩同寬，屁股後推，俯身約45度。\n2. 收緊核心，雙手同時向後拉。\n3. 夾緊肩胛骨一秒後慢放。"},
+            {id: "db_deadlift", name: "啞鈴硬舉", desc: "1. 雙腳與臀同寬，啞鈴貼腿下放。\n2. 髖部向後推 (Hip Hinge)，背部始終打直。\n3. 臀部發力向前推回站立姿勢。"},
+            {id: "bw_superman", name: "[徒手] 超人式", desc: "1. 趴姿，手腳向前延伸。\n2. 同時抬起手腳離地，停頓1-2秒。\n3. 訓練下背豎脊肌。"},
+            {id: "bw_door_row", name: "[徒手] 門框划船", desc: "1. 雙手抓穩門框邊緣，腳步向前。\n2. 身體後傾，用背力拉向門框。\n3. 控制回放速度。"}
+        ],
+        "腿部 (Legs)": [
+            {id: "db_goblet", name: "高腳杯深蹲", desc: "1. 雙手捧啞鈴於胸前，手肘向內收。\n2. 挺胸，屁股向下坐，膝蓋對齊腳尖。\n3. 蹲至大腿平行地面，腳跟發力站起。"},
+            {id: "db_lunge", name: "弓步蹲", desc: "1. 雙手持鈴，單腳向前跨步下蹲。\n2. 重心在雙腳之間，後膝接近地板不觸地。\n3. 前腳腳跟發力推回原位。"},
+            {id: "db_rdl", name: "羅馬尼亞硬舉", desc: "1. 膝蓋微彎鎖死，專注在屁股後推。\n2. 感受大腿後側拉扯感，啞鈴下放至脛骨。\n3. 保持背部平直，利用腿後力量拉起。"},
+            {id: "bw_squat", name: "[徒手] 深蹲", desc: "1. 雙腳與肩同寬。\n2. 屁股後坐，保持背部挺直。\n3. 適合高次數訓練。"},
+            {id: "bw_glute_bridge", name: "[徒手] 臀橋", desc: "1. 躺姿，膝蓋彎曲腳踩地。\n2. 臀部發力向上推高至直線。\n3. 頂峰收縮臀肌。"},
+            {id: "bw_wall_sit", name: "[徒手] 太空椅", desc: "1. 背貼牆，下蹲至大腿平行地面。\n2. 保持靜止，支撐至力竭。\n3. 訓練股四頭肌耐力。"}
+        ],
+        "肩部 (Shoulder)": [
+            {id: "db_ohp", name: "坐姿肩推", desc: "1. 椅背調直，核心收緊避免折腰。\n2. 啞鈴下放至耳垂高度，手肘垂直地面。\n3. 吐氣上推過頭，不鎖死手肘。"},
+            {id: "db_lat_raise", name: "側平舉", desc: "1. 身體微前傾，手肘微彎固定。\n2. 像倒水一樣將手肘抬至肩膀高度。\n3. 避免借力甩動，專注中束感受。"},
+            {id: "bw_pike_pushup", name: "[徒手] 折刀伏地挺身", desc: "1. 雙手撐地，屁股抬高呈倒V字。\n2. 頭頂朝地板方向下放。\n3. 推起，模擬肩推軌跡。"}
+        ],
+        "手臂 (Arms)": [
+            {id: "db_curl", name: "站姿彎舉", desc: "1. 大臂夾緊身體兩側不動。\n2. 只有前臂移動，捲起啞鈴至胸前。\n3. 頂峰收縮二頭肌，慢速下放。"},
+            {id: "db_tri_ext", name: "三頭屈伸", desc: "1. 雙手托住啞鈴一端置於腦後。\n2. 大臂夾緊頭部兩側不動，僅伸直前臂。\n3. 感受手臂後側拉伸與收縮。"},
+            {id: "bw_dips", name: "[徒手] 椅子撐體", desc: "1. 雙手撐於椅緣，雙腳伸直或彎曲。\n2. 身體下沉至手肘90度。\n3. 用三頭肌推起。"}
+        ],
+        "核心/全身 (Core/Cardio)": [
+            {id: "db_russian", name: "俄羅斯轉體", desc: "1. 坐姿，雙腳懸空，身體後傾45度。\n2. 雙手持鈴，轉動肩膀帶動身體左右轉。\n3. 視線跟隨啞鈴移動。"},
+            {id: "bw_plank", name: "[徒手] 棒式", desc: "1. 手肘撐地，身體呈一直線。\n2. 收緊腹部與臀部，不塌腰。\n3. 保持呼吸。"},
+            {id: "bw_burpee", name: "[全身] 波比跳", desc: "1. 下蹲撐地 -> 伏地挺身 -> 收腿 -> 跳起。\n2. 連續動作，燃脂首選。"},
+            {id: "bw_climber", name: "[有氧] 登山者", desc: "1. 伏地挺身姿勢。\n2. 膝蓋交替快速提向胸口。\n3. 保持核心穩定。"}
+        ]
+    };
+
+    const cooldownLibrary = {
+        "胸部 (Push)": {
+            dynamic: [{name: "擴胸擺手", desc: "站立，雙手向兩側打開感受胸肌拉伸，再交叉抱胸。輕快節奏重複 20 秒。"}],
+            static: [{name: "門框胸肌伸展", desc: "找一個門框或牆角，手肘抵住，身體前傾。保持 30 秒。"}, {name: "背後互扣拉伸", desc: "雙手在背後十指互扣，手臂伸直並向上抬起。保持 20 秒。"}]
+        },
+        "背部 (Pull)": {
+            dynamic: [{name: "貓牛式", desc: "四足跪姿，吸氣塌腰抬頭，吐氣拱背低頭。重複 10 次。"}],
+            static: [{name: "嬰兒式", desc: "跪姿，臀部坐向腳跟，雙手向前延伸趴下。保持 40 秒。"}, {name: "背闊肌側拉", desc: "左手舉高過頭向右側彎曲，感受左側背部拉伸。換邊各 20 秒。"}]
+        },
+        "腿部 (Legs)": {
+            dynamic: [{name: "前後擺腿", desc: "手扶牆，單腳前後輕鬆擺動 10 次，放鬆髖關節。換邊。"}],
+            static: [{name: "股四頭拉伸", desc: "單腳站立，一手抓住同側腳踝往後拉向臀部。各 30 秒。"}, {name: "坐姿體前彎", desc: "雙腿伸直，上半身前傾雙手抓腳尖，伸展腿後側。30 秒。"}, {name: "鴿式", desc: "伸展臀部外側與髖部。若太難可改為坐姿翹二郎腿抱膝。各 30 秒。"}]
+        },
+        "肩部 (Shoulder)": {
+            dynamic: [{name: "手臂畫圓", desc: "雙手向兩側伸直，慢慢畫大圓，順逆時鐘各 10 次。"}],
+            static: [{name: "十字扣伸展", desc: "左手橫過胸前，右手勾住左手肘往身體拉。各 20 秒。"}, {name: "頸部側拉伸", desc: "一手輕壓頭部往同側倒，另一手往下延伸。各 15 秒。"}]
+        },
+        "手臂 (Arms)": {
+            dynamic: [{name: "手腕轉動", desc: "雙手十指交扣，轉動手腕放鬆前臂。"}],
+            static: [{name: "三頭肌伸展", desc: "一手舉高彎曲手肘摸背，另一手輕壓肘部向下。各 20 秒。"}, {name: "二頭肌伸展", desc: "手掌貼牆，手臂伸直，身體往反方向旋轉。各 20 秒。"}]
+        },
+        "核心/全身 (Core/Cardio)": {
+            dynamic: [{name: "站姿轉體", desc: "雙腳寬站，雙手放鬆左右轉動上半身。重複 20 秒。"}],
+            static: [{name: "眼鏡蛇式", desc: "趴姿，手掌撐地將上半身推起，視線看上方，伸展腹肌。30 秒。"}]
+        }
+    };
+
+    // --- 初始化 ---
     function getLocalDateString() {
         const now = new Date();
         const year = now.getFullYear();
@@ -273,72 +338,448 @@
         return `${year}-${month}-${day}`;
     }
 
-    // --- 1. 動作資料庫 ---
-    const exerciseLibrary = {
-        "胸部": [
-            {id: "db_bench", name: "啞鈴臥推", desc: "1. 仰臥，雙腳踩實，肩胛骨收緊貼背。\n2. 雙手持鈴於胸線，手肘與身體呈45度。\n3. 吐氣上推至手臂伸直，吸氣慢放。"},
-            {id: "db_incline", name: "上斜臥推", desc: "1. 椅背調至30-45度，專攻上胸。\n2. 落點控制在鎖骨下方，不聳肩。\n3. 手臂保持垂直地面推起。"},
-            {id: "db_fly", name: "啞鈴飛鳥", desc: "1. 手肘微彎固定角度，像抱大樹一樣打開。\n2. 下放至大手臂平行地面即可。\n3. 用胸肌力量夾回，不是用手推。"},
-            {id: "db_pullover", name: "仰臥拉舉", desc: "1. 雙手虎口交叉握住一顆啞鈴上緣。\n2. 手臂微彎，向頭後方延伸拉伸背擴肌。\n3. 拉回至胸口上方，專注背部與下胸。"}
-        ],
-        "背部": [
-            {id: "db_row_one", name: "單臂划船", desc: "1. 單手單膝支撐於臥推椅，背部打直。\n2. 將啞鈴向後上方拉至髖部位置。\n3. 下放時讓背肌完全拉伸。"},
-            {id: "db_row_bent", name: "雙手划船", desc: "1. 雙腳與肩同寬，屁股後推，俯身約45度。\n2. 收緊核心，雙手同時向後拉。\n3. 夾緊肩胛骨一秒後慢放。"},
-            {id: "db_reverse_fly", name: "反向飛鳥", desc: "1. 俯身幅度大，手臂向兩側平舉。\n2. 專注後三角肌發力，避免過度聳肩。\n3. 手指小拇指朝上會更有感。"},
-            {id: "db_deadlift", name: "啞鈴硬舉", desc: "1. 雙腳與臀同寬，啞鈴貼腿下放。\n2. 髖部向後推 (Hip Hinge)，背部始終打直。\n3. 臀部發力向前推回站立姿勢。"}
-        ],
-        "腿部": [
-            {id: "db_goblet", name: "高腳杯深蹲", desc: "1. 雙手捧啞鈴於胸前，手肘向內收。\n2. 挺胸，屁股向下坐，膝蓋對齊腳尖。\n3. 蹲至大腿平行地面，腳跟發力站起。"},
-            {id: "db_lunge", name: "弓步蹲", desc: "1. 雙手持鈴，單腳向前跨步下蹲。\n2. 重心在雙腳之間，後膝接近地板不觸地。\n3. 前腳腳跟發力推回原位。"},
-            {id: "db_rdl", name: "羅馬尼亞硬舉", desc: "1. 膝蓋微彎鎖死，專注在屁股後推。\n2. 感受大腿後側拉扯感，啞鈴下放至脛骨。\n3. 保持背部平直，利用腿後力量拉起。"},
-            {id: "db_calf", name: "啞鈴提踵", desc: "1. 雙手持鈴或坐姿將鈴置於膝上。\n2. 盡可能墊高腳尖，頂峰收縮一秒。\n3. 慢慢下放至腳跟著地。"}
-        ],
-        "肩部": [
-            {id: "db_ohp", name: "坐姿肩推", desc: "1. 椅背調直，核心收緊避免折腰。\n2. 啞鈴下放至耳垂高度，手肘垂直地面。\n3. 吐氣上推過頭，不鎖死手肘。"},
-            {id: "db_lat_raise", name: "側平舉", desc: "1. 身體微前傾，手肘微彎固定。\n2. 像倒水一樣將手肘抬至肩膀高度。\n3. 避免借力甩動，專注中束感受。"},
-            {id: "db_front_raise", name: "前平舉", desc: "1. 掌心向下或對握，舉至視線高度。\n2. 下放速度放慢，對抗地心引力。"},
-            {id: "db_facepull", name: "俯身Y字", desc: "1. 俯身，大拇指朝上，手臂呈Y字舉起。\n2. 感受下斜方肌與後三角肌收縮。"}
-        ],
-        "手臂": [
-            {id: "db_curl", name: "站姿彎舉", desc: "1. 大臂夾緊身體兩側不動。\n2. 只有前臂移動，捲起啞鈴至胸前。\n3. 頂峰收縮二頭肌，慢速下放。"},
-            {id: "db_hammer", name: "垂式彎舉", desc: "1. 掌心相對像拿鐵鎚。\n2. 動作要領同彎舉，訓練肱肌與前臂。"},
-            {id: "db_tri_ext", name: "三頭屈伸", desc: "1. 雙手托住啞鈴一端置於腦後。\n2. 大臂夾緊頭部兩側不動，僅伸直前臂。\n3. 感受手臂後側拉伸與收縮。"},
-            {id: "db_kickback", name: "三頭踢伸", desc: "1. 俯身單手支撐，大臂貼緊體側平行地面。\n2. 小臂向後踢直，停頓一秒。\n3. 控制回放，不利用慣性。"}
-        ],
-        "核心": [
-            {id: "db_russian", name: "俄羅斯轉體", desc: "1. 坐姿，雙腳懸空，身體後傾45度。\n2. 雙手持鈴，轉動肩膀帶動身體左右轉。\n3. 視線跟隨啞鈴移動。"},
-            {id: "db_situp", name: "負重仰臥", desc: "1. 仰臥，雙手抱啞鈴於胸前。\n2. 腹部發力捲起上半身。\n3. 下背貼地，專注腹直肌收縮。"}
-        ]
-    };
-
-    const cooldownLibrary = {
-        "胸部": {
-            dynamic: [{name: "擴胸擺手", desc: "站立，雙手向兩側打開感受胸肌拉伸，再交叉抱胸。輕快節奏重複 20 秒。"}],
-            static: [{name: "門框胸肌伸展", desc: "找一個門框或牆角，手肘抵住，身體前傾。保持 30 秒。"}, {name: "背後互扣拉伸", desc: "雙手在背後十指互扣，手臂伸直並向上抬起。保持 20 秒。"}]
-        },
-        "背部": {
-            dynamic: [{name: "貓牛式", desc: "四足跪姿，吸氣塌腰抬頭，吐氣拱背低頭。重複 10 次。"}],
-            static: [{name: "嬰兒式", desc: "跪姿，臀部坐向腳跟，雙手向前延伸趴下。保持 40 秒。"}, {name: "背闊肌側拉", desc: "左手舉高過頭向右側彎曲，感受左側背部拉伸。換邊各 20 秒。"}]
-        },
-        "腿部": {
-            dynamic: [{name: "前後擺腿", desc: "手扶牆，單腳前後輕鬆擺動 10 次，放鬆髖關節。換邊。"}],
-            static: [{name: "股四頭拉伸", desc: "單腳站立，一手抓住同側腳踝往後拉向臀部。各 30 秒。"}, {name: "坐姿體前彎", desc: "雙腿伸直，上半身前傾雙手抓腳尖，伸展腿後側。30 秒。"}, {name: "鴿式", desc: "伸展臀部外側與髖部。若太難可改為坐姿翹二郎腿抱膝。各 30 秒。"}]
-        },
-        "肩部": {
-            dynamic: [{name: "手臂畫圓", desc: "雙手向兩側伸直，慢慢畫大圓，順逆時鐘各 10 次。"}],
-            static: [{name: "十字扣伸展", desc: "左手橫過胸前，右手勾住左手肘往身體拉。各 20 秒。"}, {name: "頸部側拉伸", desc: "一手輕壓頭部往同側倒，另一手往下延伸。各 15 秒。"}]
-        },
-        "手臂": {
-            dynamic: [{name: "手腕轉動", desc: "雙手十指交扣，轉動手腕放鬆前臂。"}],
-            static: [{name: "三頭肌伸展", desc: "一手舉高彎曲手肘摸背，另一手輕壓肘部向下。各 20 秒。"}, {name: "二頭肌伸展", desc: "手掌貼牆，手臂伸直，身體往反方向旋轉。各 20 秒。"}]
-        },
-        "核心": {
-            dynamic: [{name: "站姿轉體", desc: "雙腳寬站，雙手放鬆左右轉動上半身。重複 20 秒。"}],
-            static: [{name: "眼鏡蛇式", desc: "趴姿，手掌撐地將上半身推起，視線看上方，伸展腹肌。30 秒。"}]
-        }
-    };
-
-    // --- 3. 初始化 ---
     let currentTodayList = []; 
     let timerInterval = null;
     let viewDate = new Date();
+    const REAL_TODAY = getLocalDateString();
+    
+    // 編輯用變數
+    let currentEditDate = null;
+    let currentEditIndex = null;
+
+    function init() {
+        populateSelector();
+        document.getElementById('datePicker').value = REAL_TODAY;
+        handleDateChange();
+
+        if(localStorage.getItem('nuo_timer_end')) {
+            const end = parseInt(localStorage.getItem('nuo_timer_end'));
+            if(end > Date.now()) startTimer((end - Date.now())/1000);
+        }
+    }
+
+    // --- 核心邏輯 ---
+    function getSelectedDateKey() { return document.getElementById('datePicker').value || REAL_TODAY; }
+
+    function handleDateChange() {
+        const dateKey = getSelectedDateKey();
+        currentTodayList = JSON.parse(localStorage.getItem(`nuo_list_${dateKey}`)) || [];
+        renderTodayExercises();
+        updateDashboard();
+        renderHabitGrid();
+        updateUIStyle();
+    }
+
+    function resetToToday() {
+        document.getElementById('datePicker').value = REAL_TODAY;
+        handleDateChange();
+    }
+
+    function updateUIStyle() {
+        const dateKey = getSelectedDateKey();
+        const dashboard = document.getElementById('dashboard');
+        const bodyTag = document.getElementById('bodyTag');
+        const volLabel = document.getElementById('volLabel');
+        if(dateKey !== REAL_TODAY) {
+            dashboard.classList.add('past-mode');
+            bodyTag.classList.add('is-past-mode');
+            volLabel.innerText = "該日訓練量 (補登)";
+        } else {
+            dashboard.classList.remove('past-mode');
+            bodyTag.classList.remove('is-past-mode');
+            volLabel.innerText = "今日訓練量";
+        }
+    }
+
+    function populateSelector() {
+        const selector = document.getElementById('exerciseSelector');
+        selector.innerHTML = '<option value="" disabled selected>➕ 選擇動作新增...</option>';
+        for (const [group, exercises] of Object.entries(exerciseLibrary)) {
+            const optgroup = document.createElement('optgroup');
+            optgroup.label = group;
+            exercises.forEach(ex => {
+                const option = document.createElement('option');
+                option.value = ex.id;
+                option.innerText = ex.name;
+                optgroup.appendChild(option);
+            });
+            selector.appendChild(optgroup);
+        }
+    }
+
+    window.addExerciseToToday = () => {
+        const selector = document.getElementById('exerciseSelector');
+        const exId = selector.value;
+        const dateKey = getSelectedDateKey();
+        if(!exId || exId === "") { alert("請先選擇一個動作"); return; }
+        if(!currentTodayList.includes(exId)) {
+            currentTodayList.push(exId);
+            localStorage.setItem(`nuo_list_${dateKey}`, JSON.stringify(currentTodayList));
+            renderTodayExercises();
+            setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 100);
+            selector.selectedIndex = 0;
+        } else { alert("這個動作已經在清單中了"); }
+    }
+
+    window.removeCard = (exId) => {
+        if(confirm("從清單移除此動作？")) {
+            const dateKey = getSelectedDateKey();
+            currentTodayList = currentTodayList.filter(id => id !== exId);
+            localStorage.setItem(`nuo_list_${dateKey}`, JSON.stringify(currentTodayList));
+            renderTodayExercises();
+        }
+    }
+
+    function getWeightOptions(selectedWeight) {
+        let html = "";
+        for(let i=2; i<=32; i+=2) html += `<option value="${i}" ${selectedWeight == i ? 'selected' : ''}>${i} kg</option>`;
+        html = `<option value="0" ${selectedWeight == 0 ? 'selected' : ''}>0 (徒手/自重)</option>` + html;
+        return html;
+    }
+    function getRepOptions(selectedReps) {
+        let html = "";
+        for(let i=1; i<=50; i++) html += `<option value="${i}" ${selectedReps == i ? 'selected' : ''}>${i} 下</option>`;
+        return html;
+    }
+
+    function renderTodayExercises() {
+        const container = document.getElementById('workoutContainer');
+        const dateKey = getSelectedDateKey();
+        const history = getHistory();
+        const todayLog = history[dateKey] ? (history[dateKey].exercises || []) : [];
+
+        if (currentTodayList.length === 0) {
+            container.innerHTML = `<div class="empty-hint"><h3>尚未安排動作</h3><p>請使用上方選單新增 👇</p></div>`;
+            return;
+        }
+
+        container.innerHTML = currentTodayList.map(exId => {
+            let exName = exId, exDesc = "暫無說明";
+            for(const g in exerciseLibrary) {
+                const found = exerciseLibrary[g].find(e => e.id === exId);
+                if(found) { exName = found.name; exDesc = found.desc || "暫無說明"; }
+            }
+            const doneSets = todayLog.filter(log => log.id === exId);
+            let setsHtml = doneSets.map((s, idx) => 
+                `<div class="set-item"><span class="set-num">第 ${idx+1} 組</span><span>${s.w} kg &times; ${s.r} 下</span><span style="color:#999; font-size:0.8rem;">✔️</span></div>`
+            ).join('');
+            if(doneSets.length === 0) setsHtml = `<div style="padding:10px; color:#999; text-align:center; font-size:0.9rem;">尚未開始</div>`;
+
+            let defaultW = 10, defaultR = 10;
+            if(exId.startsWith('bw_')) defaultW = 0;
+            if(doneSets.length > 0) {
+                defaultW = doneSets[doneSets.length - 1].w;
+                defaultR = doneSets[doneSets.length - 1].r;
+            } else {
+                const lastHistory = JSON.parse(localStorage.getItem(`nuo_last_${exId}`));
+                if(lastHistory) { defaultW = lastHistory.w; defaultR = lastHistory.r; }
+            }
+
+            return `
+            <div class="card">
+                <button class="btn-remove-card" onclick="removeCard('${exId}')">&times;</button>
+                <div class="card-header"><div class="exercise-name">${exName}</div></div>
+                <div class="exercise-desc-box">${exDesc}</div>
+                <div class="sets-list">${setsHtml}</div>
+                <div class="input-area">
+                    <div class="select-wrapper"><div class="select-label">重量</div><select id="w_${exId}">${getWeightOptions(defaultW)}</select></div>
+                    <div class="select-wrapper"><div class="select-label">次數</div><select id="r_${exId}">${getRepOptions(defaultR)}</select></div>
+                </div>
+                <button class="btn-log" onclick="logSingleSet('${exId}', '${exName}')">✅ 完成第 ${doneSets.length + 1} 組</button>
+            </div>`;
+        }).join('');
+    }
+
+    function getHistory() { return JSON.parse(localStorage.getItem('nuo_global_history')) || {}; }
+    
+    window.logSingleSet = (exId, exName) => {
+        const dateKey = getSelectedDateKey();
+        const w = parseFloat(document.getElementById(`w_${exId}`).value);
+        const r = parseFloat(document.getElementById(`r_${exId}`).value);
+        localStorage.setItem(`nuo_last_${exId}`, JSON.stringify({w, r}));
+
+        const history = getHistory();
+        if (!history[dateKey]) history[dateKey] = { volume: 0, cardio: 0, exercises: [] };
+        
+        history[dateKey].exercises.push({ id: exId, name: exName, w: w, r: r, s: 1, time: new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'})});
+        recalculateDailyStats(history, dateKey);
+
+        localStorage.setItem('nuo_global_history', JSON.stringify(history));
+        updateDashboard();
+        renderHabitGrid();
+        renderTodayExercises();
+        if(dateKey === REAL_TODAY) { startTimer(90); openTimerModal(); }
+    }
+
+    window.saveCardio = () => {
+        const dateKey = getSelectedDateKey();
+        const mins = parseFloat(document.getElementById('cardioInput').value);
+        if(!mins) return;
+        const history = getHistory();
+        if (!history[dateKey]) history[dateKey] = { volume: 0, cardio: 0, exercises: [] };
+        history[dateKey].exercises.push({ name: "🏃 有氧", w: 0, r: mins, s: 1, type: 'cardio', time: new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}) });
+        recalculateDailyStats(history, dateKey);
+        localStorage.setItem('nuo_global_history', JSON.stringify(history));
+        updateDashboard();
+        renderHabitGrid();
+        document.getElementById('cardioInput').value = '';
+        alert("紀錄成功");
+    }
+
+    // --- 修改與刪除紀錄 (新功能) ---
+    function deleteHistoryItem(dateKey, index) {
+        if(!confirm("確定要刪除這筆紀錄嗎？")) return;
+        const history = getHistory();
+        if(history[dateKey] && history[dateKey].exercises) {
+            history[dateKey].exercises.splice(index, 1); // 移除陣列中的項目
+            recalculateDailyStats(history, dateKey); // 重算總量
+            localStorage.setItem('nuo_global_history', JSON.stringify(history));
+            
+            // 刷新介面
+            updateDashboard();
+            renderHabitGrid();
+            
+            // 如果是在歷史月曆中操作，刷新月曆詳情
+            showHistDetail(dateKey, history[dateKey]);
+            
+            // 如果是當天，也刷新卡片狀態
+            if(dateKey === getSelectedDateKey()) renderTodayExercises();
+        }
+    }
+
+    function editHistoryItem(dateKey, index) {
+        const history = getHistory();
+        const item = history[dateKey].exercises[index];
+        if(!item) return;
+
+        currentEditDate = dateKey;
+        currentEditIndex = index;
+
+        const modal = document.getElementById('editRecordModal');
+        const content = document.getElementById('editFormContent');
+        
+        if(item.type === 'cardio') {
+            content.innerHTML = `
+                <p><b>${item.name}</b></p>
+                <label>時間 (分鐘)</label>
+                <input type="number" id="edit_r" value="${item.r}" style="width:100%; padding:10px; margin-top:5px;">
+                <input type="hidden" id="edit_w" value="0">
+            `;
+        } else {
+            content.innerHTML = `
+                <p><b>${item.name}</b></p>
+                <label>重量 (kg)</label>
+                <input type="number" id="edit_w" value="${item.w}" style="width:100%; padding:10px; margin-top:5px; margin-bottom:10px;">
+                <label>次數</label>
+                <input type="number" id="edit_r" value="${item.r}" style="width:100%; padding:10px; margin-top:5px;">
+            `;
+        }
+        modal.style.display = "flex";
+    }
+
+    function saveEditedRecord() {
+        const w = parseFloat(document.getElementById('edit_w').value) || 0;
+        const r = parseFloat(document.getElementById('edit_r').value) || 0;
+        
+        const history = getHistory();
+        if(history[currentEditDate] && history[currentEditDate].exercises[currentEditIndex]) {
+            history[currentEditDate].exercises[currentEditIndex].w = w;
+            history[currentEditDate].exercises[currentEditIndex].r = r;
+            
+            recalculateDailyStats(history, currentEditDate);
+            localStorage.setItem('nuo_global_history', JSON.stringify(history));
+            
+            document.getElementById('editRecordModal').style.display = 'none';
+            
+            updateDashboard();
+            renderHabitGrid();
+            // 刷新月曆詳情
+            showHistDetail(currentEditDate, history[currentEditDate]);
+            // 刷新當日卡片
+            if(currentEditDate === getSelectedDateKey()) renderTodayExercises();
+        }
+    }
+
+    // 重新計算當日總量與有氧 (重要：防止數據不同步)
+    function recalculateDailyStats(history, dateKey) {
+        const data = history[dateKey];
+        if(!data) return;
+        
+        let newVolume = 0;
+        let newCardio = 0;
+        
+        if(data.exercises) {
+            data.exercises.forEach(ex => {
+                if(ex.type === 'cardio') {
+                    newCardio += ex.r;
+                } else {
+                    newVolume += (ex.w * ex.r * (ex.s || 1));
+                }
+            });
+        }
+        
+        data.volume = newVolume;
+        data.cardio = newCardio;
+    }
+
+    // --- UI 與輔助 ---
+    window.openCooldown = () => {
+        const modal = document.getElementById('cooldownModal');
+        const content = document.getElementById('cooldownContent');
+        content.innerHTML = "";
+        let groupsWorked = new Set();
+        currentTodayList.forEach(exId => {
+            for(let group in exerciseLibrary) {
+                if(exerciseLibrary[group].find(e => e.id === exId)) { groupsWorked.add(group); break; }
+            }
+        });
+        if(groupsWorked.size === 0) {
+            content.innerHTML = `<div class="cooldown-section"><div class="cooldown-title">全身放鬆</div><div class="cooldown-item"><div class="cooldown-icon">🧘</div><div><span class="cooldown-name">全身伸展</span><div class="cooldown-desc">全身放鬆伸展 30 秒。</div></div></div></div>`;
+        } else {
+            let dynamicList = [], staticList = [];
+            groupsWorked.forEach(group => {
+                if(cooldownLibrary[group]) {
+                    dynamicList.push(...cooldownLibrary[group].dynamic);
+                    staticList.push(...cooldownLibrary[group].static);
+                }
+            });
+            let html = "";
+            if(dynamicList.length > 0) {
+                html += `<div class="cooldown-section"><div class="cooldown-title">🔄 動態放鬆</div>`;
+                dynamicList.forEach(item => { html += `<div class="cooldown-item"><div class="cooldown-icon">🤸</div><div><span class="cooldown-name">${item.name}</span><div class="cooldown-desc">${item.desc}</div></div></div>`; });
+                html += `</div>`;
+            }
+            if(staticList.length > 0) {
+                html += `<div class="cooldown-section"><div class="cooldown-title">🧘 靜態伸展</div>`;
+                staticList.forEach(item => { html += `<div class="cooldown-item"><div class="cooldown-icon">🧊</div><div><span class="cooldown-name">${item.name}</span><div class="cooldown-desc">${item.desc}</div></div></div>`; });
+                html += `</div>`;
+            }
+            content.innerHTML = html;
+        }
+        modal.style.display = "flex";
+    }
+
+    function updateDashboard() {
+        const dateKey = getSelectedDateKey();
+        const h = getHistory();
+        const t = h[dateKey] || { volume: 0, cardio: 0 };
+        let txt = `${t.volume} <span style="font-size:1rem;">kg</span>`;
+        if(t.cardio > 0) txt += ` <span style="font-size:0.9rem;opacity:0.8;">+ ${t.cardio}m 有氧</span>`;
+        document.getElementById('todayVolume').innerHTML = txt;
+        let streak = 0, d = new Date();
+        for(let i=0; i<365; i++) {
+            let k = d.toISOString().split('T')[0];
+            const dt = h[k];
+            if(dt && (dt.volume>0 || dt.cardio>0 || (dt.exercises&&dt.exercises.length>0))) { streak++; d.setDate(d.getDate()-1); } 
+            else if (k === REAL_TODAY) { d.setDate(d.getDate()-1); }
+            else break;
+        }
+        document.getElementById('streakCount').innerText = `🔥 ${streak} 天`;
+    }
+
+    function renderHabitGrid() {
+        const grid = document.getElementById('habitGrid'); grid.innerHTML = '';
+        const h = getHistory();
+        const dateKey = getSelectedDateKey();
+        for(let i=27; i>=0; i--) {
+            const d = new Date(); d.setDate(d.getDate()-i);
+            const k = d.toISOString().split('T')[0];
+            const year = d.getFullYear();
+            const month = String(d.getMonth()+1).padStart(2,'0');
+            const day = String(d.getDate()).padStart(2,'0');
+            const k_local = `${year}-${month}-${day}`;
+            const div = document.createElement('div');
+            div.className = `habit-day`;
+            if (k_local === REAL_TODAY) div.classList.add('today');
+            if (k_local === dateKey && dateKey !== REAL_TODAY) div.style.border = "2px solid #ffe600";
+            const dt = h[k_local];
+            if(dt && (dt.volume>0 || dt.cardio>0)) div.classList.add('active');
+            div.innerText = d.getDate();
+            grid.appendChild(div);
+        }
+    }
+
+    function startTimer(s) {
+        clearInterval(timerInterval);
+        const end = Date.now() + s*1000;
+        localStorage.setItem('nuo_timer_end', end);
+        document.getElementById('floatTimer').style.display='flex';
+        updateT(s);
+        timerInterval = setInterval(()=>{
+            const left = Math.ceil((end - Date.now())/1000);
+            if(left<=0) { clearInterval(timerInterval); updateT(0); localStorage.removeItem('nuo_timer_end'); alert("休息結束！"); document.getElementById('floatTimer').style.display='none'; closeTimerModal(true); }
+            else updateT(left);
+        },1000);
+    }
+    function updateT(s) {
+        const m=Math.floor(s/60).toString().padStart(2,'0'), sec=(s%60).toString().padStart(2,'0');
+        document.getElementById('floatTimer').innerText = `${m}:${sec}`;
+        document.getElementById('timerBigDisplay').innerText = `${m}:${sec}`;
+    }
+    window.adjustTimer = (d) => {
+        const end = parseInt(localStorage.getItem('nuo_timer_end'));
+        if(end) { const n = end + d*1000; localStorage.setItem('nuo_timer_end', n); updateT(Math.max(0, Math.ceil((n-Date.now())/1000))); }
+    }
+    window.openTimerModal = () => document.getElementById('timerModal').style.display='flex';
+    window.closeTimerModal = (stop) => { document.getElementById('timerModal').style.display='none'; if(stop) { clearInterval(timerInterval); document.getElementById('floatTimer').style.display='none'; localStorage.removeItem('nuo_timer_end'); } }
+
+    window.openHistoryModal = () => { viewDate=new Date(); renderCal(viewDate); document.getElementById('historyModal').style.display='flex'; }
+    window.closeHistoryModal = () => document.getElementById('historyModal').style.display='none';
+    window.changeMonth = (o) => { viewDate.setMonth(viewDate.getMonth()+o); renderCal(viewDate); }
+    function renderCal(date) {
+        const y=date.getFullYear(), m=date.getMonth();
+        document.getElementById('calTitle').innerText = `${y}年 ${m+1}月`;
+        const grid=document.getElementById('calendarGrid'); grid.innerHTML = `<div>日</div><div>一</div><div>二</div><div>三</div><div>四</div><div>五</div><div>六</div>`;
+        const first=new Date(y,m,1), last=new Date(y,m+1,0);
+        const h=getHistory();
+        for(let i=0; i<first.getDay(); i++) grid.innerHTML+=`<div></div>`;
+        for(let d=1; d<=last.getDate(); d++) {
+            const k = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+            const dt = h[k];
+            const has = dt && (dt.volume>0 || dt.cardio>0);
+            const div = document.createElement('div');
+            div.className = `cal-day ${has?'has-data':''}`;
+            div.innerText = d;
+            div.onclick = () => showHistDetail(k, dt);
+            grid.appendChild(div);
+        }
+        document.getElementById('historyDetails').innerHTML = '<p style="text-align:center;color:#999">點擊日期查看詳情</p>';
+    }
+    
+    function showHistDetail(k, dt) {
+        const div = document.getElementById('historyDetails');
+        if(!dt || !dt.exercises || dt.exercises.length === 0) { 
+            div.innerHTML=`<h4>${k}</h4><p>無紀錄</p>`; return; 
+        }
+        let html = `<h4>${k}</h4><p>重訓: ${dt.volume||0}kg | 有氧: ${dt.cardio||0}m</p>`;
+        
+        // 這裡稍微反轉陣列是為了顯示，但在編輯刪除時需要用原始索引，所以我們不直接 reverse 原陣列
+        // 而是從後面開始遍歷
+        for(let i = dt.exercises.length - 1; i >= 0; i--) {
+            const e = dt.exercises[i];
+            let detailText = "";
+            if(e.type === 'cardio') {
+                detailText = `🏃 ${e.r}分鐘`;
+            } else {
+                detailText = `<b>${e.name}</b> ${e.w}kg x ${e.r}`;
+            }
+            
+            html += `
+            <div class="history-item">
+                <div class="history-info">
+                    ${detailText} <span style="font-size:0.8rem;color:#888">${e.time}</span>
+                </div>
+                <div class="history-actions">
+                    <button class="btn-action" onclick="editHistoryItem('${k}', ${i})">✏️</button>
+                    <button class="btn-action" onclick="deleteHistoryItem('${k}', ${i})">🗑️</button>
+                </div>
+            </div>`;
+        }
+        div.innerHTML = html;
+    }
+
+    if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    init();
+</script>
+</body>
+</html>
