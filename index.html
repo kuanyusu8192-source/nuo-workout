@@ -2,518 +2,179 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NUO健身 Ultimate</title>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#2c3e50">
+    <title>NUO Pro Icon Generator</title>
     <style>
-        :root {
-            --primary: #3498db;
-            --success: #27ae60;
-            --warning: #f39c12;
-            --danger: #c0392b;
-            --dark: #2c3e50;
-            --light: #ecf0f1;
-            --grey: #95a5a6;
-            --card-bg: #ffffff;
-            --travel-color: #9b59b6;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: var(--dark);
-            margin: 0;
-            padding: 0;
-            padding-bottom: 100px;
-            -webkit-tap-highlight-color: transparent;
-        }
-        
-        /* 頂部儀表板 */
-        .dashboard {
-            background: var(--dark);
-            color: white;
-            padding: 20px 15px;
-            border-bottom-left-radius: 20px;
-            border-bottom-right-radius: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: background 0.3s;
-        }
-        .dashboard.travel-mode { background: var(--travel-color); }
-
-        /* 模式切換開關 */
-        .mode-switch-container {
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            text-align: center; 
+            padding: 40px; 
+            background-color: #eef2f5;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .app-title { font-size: 1.2rem; font-weight: bold; }
-        
-        .switch {
-            position: relative;
-            display: inline-block;
-            width: 50px;
-            height: 24px;
-        }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(0,0,0,0.3);
-            transition: .4s;
-            border-radius: 34px;
-        }
-        .slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-        }
-        input:checked + .slider { background-color: var(--success); }
-        input:checked + .slider:before { transform: translateX(26px); }
-        .switch-label { font-size: 0.8rem; margin-left: 10px; color: rgba(255,255,255,0.9); }
-
-        /* 統計數據 */
-        .stats-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .total-vol { font-size: 1.8rem; font-weight: bold; color: var(--success); }
-        .dashboard.travel-mode .total-vol { color: #f1c40f; }
-
-        .total-label { font-size: 0.8rem; opacity: 0.8; }
-
-        /* 習慣鏈日曆 */
-        .habit-tracker {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 6px;
-            margin-top: 10px;
-        }
-        .habit-day {
-            aspect-ratio: 1;
-            background: rgba(255,255,255,0.1);
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.5);
-        }
-        .habit-day.active {
-            background: var(--success);
-            color: white;
-            font-weight: bold;
-            box-shadow: 0 0 5px var(--success);
-        }
-        .dashboard.travel-mode .habit-day.active {
-            background: #f1c40f;
-            color: var(--dark);
-            box-shadow: 0 0 5px #f1c40f;
-        }
-        .habit-day.today { border: 1px solid white; }
-
-        /* 歷史按鈕 */
-        .btn-history {
-            background: rgba(255,255,255,0.15);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: white;
-            width: 100%;
-            padding: 8px;
-            border-radius: 8px;
-            margin-top: 15px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-        }
-
-        /* 星期選擇器 */
-        .day-selector {
-            display: flex;
-            overflow-x: auto;
-            padding: 15px;
-            gap: 10px;
-            scrollbar-width: none;
-        }
-        .day-btn {
-            background: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            color: var(--grey);
-            white-space: nowrap;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: 0.2s;
-        }
-        .day-btn.active {
-            background: var(--dark);
-            color: white;
-            box-shadow: 0 4px 8px rgba(44, 62, 80, 0.3);
-        }
-        .travel-mode-body .day-btn.active { background: var(--travel-color); }
-
-        /* 訓練卡片 */
-        .container { padding: 0 15px; }
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 15px;
-            margin-bottom: 15px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
-            border-left: 5px solid var(--dark);
-        }
-        .travel-mode-body .card { border-left-color: var(--travel-color); }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-        .exercise-name { font-size: 1.1rem; font-weight: bold; }
-        .one-rm { font-size: 0.75rem; color: var(--warning); font-weight: bold; background: #fff8e1; padding: 2px 6px; border-radius: 4px; }
-        .desc-text { font-size: 0.85rem; color: #666; margin-bottom: 12px; line-height: 1.4; }
-
-        /* 輸入區 */
-        .log-area {
-            background: #f8f9fa;
-            padding: 10px;
-            border-radius: 8px;
-        }
-        .input-row {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        input[type="number"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #e0e0e0;
-            border-radius: 6px;
-            font-size: 1.1rem;
-            text-align: center;
-            background: white;
-            -moz-appearance: textfield;
-        }
-        .btn-log {
-            background: var(--dark);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-        .travel-mode-body .btn-log { background: var(--travel-color); }
-
-        .history-text {
-            font-size: 0.75rem;
-            color: var(--grey);
-            margin-bottom: 5px;
-            text-align: right;
-        }
-
-        /* 懸浮計時器 */
-        .timer-float {
-            position: fixed;
-            bottom: 90px;
-            right: 20px;
-            background: var(--dark);
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            z-index: 150;
-            cursor: pointer;
-            border: 2px solid var(--success);
-            font-size: 0.9rem;
-        }
-
-        /* 底部按鈕 */
-        .cooldown-btn {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--warning);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: bold;
-            box-shadow: 0 4px 10px rgba(243, 156, 18, 0.4);
-            z-index: 100;
-        }
-
-        /* 模態框通用樣式 */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
-            z-index: 1000;
-            justify-content: center;
-            align-items: center;
             flex-direction: column;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 15px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-        
-        /* 歷史月曆樣式 */
-        .calendar-header {
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
         }
-        .calendar-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 5px;
+        h2 { color: #2c3e50; }
+        .preview-area {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
             margin-bottom: 20px;
         }
-        .cal-day-header {
-            font-size: 0.8rem;
-            color: var(--grey);
+        canvas { 
+            border-radius: 22%; /* 模擬 iOS icon 圓角 */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 256px; /* 預覽大小 */
+            height: 256px;
+        }
+        .btn-group { display: flex; gap: 15px; }
+        button { 
+            padding: 12px 24px; 
+            font-size: 1rem; 
             font-weight: bold;
-            padding-bottom: 5px;
+            background: linear-gradient(135deg, #3498db, #2980b9); 
+            color: white; 
+            border: none; 
+            border-radius: 50px; 
+            cursor: pointer; 
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.4);
+            transition: transform 0.2s;
         }
-        .cal-day {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            font-size: 0.9rem;
-            cursor: pointer;
-            position: relative;
-        }
-        .cal-day:hover { background-color: #f0f0f0; }
-        .cal-day.has-data {
-            background-color: #d5f5e3;
-            color: var(--success);
-            font-weight: bold;
-        }
-        .cal-day.has-data::after {
-            content: '';
-            position: absolute;
-            bottom: 3px;
-            width: 4px;
-            height: 4px;
-            background: var(--success);
-            border-radius: 50%;
-        }
-        .cal-day.selected {
-            border: 2px solid var(--primary);
-        }
-        .history-details {
-            text-align: left;
-            border-top: 1px solid #eee;
-            padding-top: 15px;
-        }
-        .history-item {
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #f9f9f9;
-        }
-
-        /* 計時器樣式 */
-        .timer-display { font-size: 4rem; font-weight: bold; color: var(--dark); font-variant-numeric: tabular-nums; }
-        .timer-controls { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
-        .btn-timer { padding: 10px 20px; border-radius: 8px; border: none; font-size: 1rem; font-weight: bold; }
-        .btn-stop { background: var(--danger); color: white; }
-        .btn-add { background: var(--light); color: var(--dark); }
-        .close-btn-corner { float: right; font-size: 1.5rem; cursor: pointer; color: #999; }
+        button:hover { transform: translateY(-2px); }
+        button:active { transform: translateY(0); }
     </style>
 </head>
-<body id="bodyTag">
-
-<!-- 儀表板區域 -->
-<div class="dashboard" id="dashboard">
-    <div class="mode-switch-container">
-        <div class="app-title" id="appTitle">NUO健身 Pro</div>
-        <div style="display:flex; align-items:center;">
-            <label class="switch">
-                <input type="checkbox" id="modeToggle" onchange="toggleMode()">
-                <span class="slider"></span>
-            </label>
-            <span class="switch-label" id="modeLabel">器材</span>
-        </div>
-    </div>
-
-    <div class="stats-row">
-        <div>
-            <div class="total-label">今日訓練量 (Volume)</div>
-            <div class="total-vol" id="todayVolume">0 <span style="font-size:1rem;">kg</span></div>
-        </div>
-        <div style="text-align:right;">
-            <div class="total-label">連續紀錄</div>
-            <div style="color:white; font-weight:bold;" id="streakCount">🔥 0 天</div>
-        </div>
-    </div>
+<body>
+    <h2>NUO 健身 App - 新版設計圖標</h2>
     
-    <!-- 習慣鏈 -->
-    <div class="total-label" style="margin-bottom:5px;">習慣鏈 (過去4週)</div>
-    <div class="habit-tracker" id="habitGrid"></div>
-
-    <!-- 新增：歷史紀錄按鈕 -->
-    <button class="btn-history" onclick="openHistoryModal()">
-        📅 查看完整歷史紀錄
-    </button>
-</div>
-
-<!-- 星期導航 -->
-<div class="day-selector" id="daySelector"></div>
-
-<!-- 訓練列表 -->
-<div class="container" id="workoutContainer"></div>
-
-<!-- 懸浮計時器 -->
-<div id="floatTimer" class="timer-float" onclick="openTimerModal()">00:00</div>
-
-<!-- 底部收操 -->
-<button class="cooldown-btn" onclick="openCooldown()">🧘 訓練結束 & 收操</button>
-
-<!-- 視窗 1: 計時器 -->
-<div id="timerModal" class="modal">
-    <div class="modal-content">
-        <h3 style="margin:0; color:#888;">組間休息</h3>
-        <div class="timer-display" id="timerBigDisplay">01:30</div>
-        <div class="timer-controls">
-            <button class="btn-timer btn-add" onclick="adjustTimer(-10)">-10s</button>
-            <button class="btn-timer btn-add" onclick="adjustTimer(10)">+10s</button>
-        </div>
-        <div class="timer-controls">
-            <button class="btn-timer btn-stop" onclick="closeTimerModal(true)">停止計時</button>
-            <button class="btn-timer" style="background:var(--primary); color:white;" onclick="closeTimerModal(false)">背景執行</button>
-        </div>
+    <div class="preview-area">
+        <!-- 實際畫布是 512x512，但 CSS 縮小顯示預覽 -->
+        <canvas id="canvasIcon" width="512" height="512"></canvas>
     </div>
-</div>
 
-<!-- 視窗 2: 收操 -->
-<div id="cooldownModal" class="modal" onclick="if(event.target === this) closeCooldown()">
-    <div class="modal-content" style="text-align:left;">
-        <h2 style="margin-top:0;">今日收操建議</h2>
-        <div id="cooldownText" style="line-height:1.6; color:#444;"></div>
-        <button class="btn-log" style="margin-top:20px;" onclick="closeCooldown()">完成</button>
+    <div class="btn-group">
+        <button onclick="downloadIcon(512)">下載 icon-512.png</button>
+        <button onclick="downloadIcon(192)">下載 icon-192.png</button>
     </div>
-</div>
 
-<!-- 視窗 3: 完整歷史紀錄 (新功能) -->
-<div id="historyModal" class="modal" onclick="if(event.target === this) closeHistoryModal()">
-    <div class="modal-content" style="padding:15px;">
-        <span class="close-btn-corner" onclick="closeHistoryModal()">&times;</span>
-        
-        <div class="calendar-header">
-            <button class="btn-timer btn-add" style="padding:5px 10px;" onclick="changeMonth(-1)">❮</button>
-            <h3 id="calTitle" style="margin:0;">2023 年 10 月</h3>
-            <button class="btn-timer btn-add" style="padding:5px 10px;" onclick="changeMonth(1)">❯</button>
-        </div>
-        
-        <div class="calendar-grid" id="calendarGrid">
-            <!-- JS 生成 -->
-        </div>
+    <script>
+        function draw() {
+            const canvas = document.getElementById('canvasIcon');
+            const ctx = canvas.getContext('2d');
+            const w = 512;
+            const h = 512;
 
-        <div class="history-details" id="historyDetails">
-            <p style="color:#999; text-align:center;">點選日期查看詳細紀錄</p>
-        </div>
-    </div>
-</div>
+            // 1. 背景 (高級深藍漸層)
+            // 從左上到右下的漸層
+            const gradient = ctx.createLinearGradient(0, 0, w, h);
+            gradient.addColorStop(0, "#2c3e50"); // 深藍灰
+            gradient.addColorStop(1, "#3498db"); // 亮藍
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, w, h);
 
-<script>
-    // --- 1. 資料庫 (兩套：器材 & 出差) ---
-    const gymWorkouts = {
-        0: { name: "週日", focus: "休息日", exercises: [], cooldown: "放鬆心情，準備迎接新的一週。" },
-        1: { name: "週一", focus: "推 (胸/肩/三頭)", 
-            exercises: [
-                {id: "m1", name: "啞鈴臥推", muscle: "胸大肌", desc: "背貼緊，穩定的推舉。"},
-                {id: "m2", name: "上斜啞鈴臥推", muscle: "上胸", desc: "椅背30度，專注上胸。"},
-                {id: "m3", name: "坐姿啞鈴肩推", muscle: "前三角", desc: "核心收緊，不過度挺腰。"},
-                {id: "m4", name: "啞鈴側平舉", muscle: "中三角", desc: "手肘微彎，不要聳肩。"},
-                {id: "m5", name: "過頂三頭屈伸", muscle: "三頭肌", desc: "大臂夾緊頭部兩側。"}
-            ], cooldown: "1. 胸肌拉伸 30s<br>2. 肩前側拉伸 30s<br>3. 三頭肌拉伸 30s" },
-        2: { name: "週二", focus: "拉 (背/後肩/二頭)", 
-            exercises: [
-                {id: "t1", name: "單臂划船", muscle: "背闊肌", desc: "像拉鋸子一樣，將手肘拉過背部。"},
-                {id: "t2", name: "雙手划船", muscle: "上背", desc: "俯身，脊椎保持中立。"},
-                {id: "t3", name: "反向飛鳥", muscle: "後三角", desc: "專注後肩發力，不要夾肩胛。"},
-                {id: "t4", name: "站姿彎舉", muscle: "二頭肌", desc: "身體不晃動，離心慢放。"},
-                {id: "t5", name: "垂式彎舉", muscle: "肱肌", desc: "掌心相對，同時訓練前臂。"}
-            ], cooldown: "1. 嬰兒式 60s<br>2. 背部側拉伸 30s<br>3. 二頭肌拉伸 30s" },
-        3: { name: "週三", focus: "腿 (股四/後腿)", 
-            exercises: [
-                {id: "w1", name: "高腳杯深蹲", muscle: "股四頭", desc: "持啞鈴於胸前，蹲深。"},
-                {id: "w2", name: "啞鈴分腿蹲", muscle: "單腿/臀", desc: "保持平衡，膝蓋對準腳尖。"},
-                {id: "w3", name: "RDL 硬舉", muscle: "腿後/臀", desc: "屁股後推，感受腿後拉扯。"},
-                {id: "w4", name: "坐姿提踵", muscle: "小腿", desc: "啞鈴放膝上，墊腳尖。"}
-            ], cooldown: "1. 股四頭肌拉伸 30s<br>2. 坐姿體前彎 30s<br>3. 鴿式伸展 30s" },
-        4: { name: "週四", focus: "主動恢復", exercises: [], cooldown: "做點瑜珈或滾筒放鬆。" },
-        5: { name: "週五", focus: "上肢綜合", 
-            exercises: [
-                {id: "f1", name: "平地飛鳥", muscle: "胸", desc: "像抱大樹一樣打開雙手。"},
-                {id: "f2", name: "阿諾肩推", muscle: "肩整體", desc: "旋轉推舉，增加行程。"},
-                {id: "f3", name: "集中彎舉", muscle: "二頭", desc: "孤立二頭肌峰。"},
-                {id: "f4", name: "板凳撐體", muscle: "三頭", desc: "身體垂直上下。"}
-            ], cooldown: "1. 上半身動態伸展<br>2. 頸部放鬆" },
-        6: { name: "週六", focus: "下肢/核心", 
-            exercises: [
-                {id: "s1", name: "相撲深蹲", muscle: "內收肌", desc: "寬站距，腳尖外開。"},
-                {id: "s2", name: "單腿硬舉", muscle: "平衡", desc: "核心收緊，單腳支撐。"},
-                {id: "s3", name: "俄羅斯轉體", muscle: "腹斜肌", desc: "轉體時吐氣。"},
-                {id: "s4", name: "負重捲腹", muscle: "腹直肌", desc: "感受腹肌收縮。"}
-            ], cooldown: "1. 腿部全套伸展<br>2. 腹部伸展 (眼鏡蛇式)" }
-    };
+            // --- 開始繪製啞鈴 (儲存狀態以便旋轉) ---
+            ctx.save();
+            
+            // 2. 移動畫布中心並旋轉 45 度
+            ctx.translate(w / 2, h / 2);
+            ctx.rotate(-45 * Math.PI / 180); // 逆時針轉45度，讓啞鈴看起來往上衝
 
-    const travelWorkouts = {
-        0: { name: "週日", focus: "休息日", exercises: [], cooldown: "好好補眠，調整時差或疲勞。" },
-        1: { name: "週一", focus: "推 (出差版)", 
-            exercises: [
-                {id: "tm1", name: "標準伏地挺身", muscle: "胸/三頭", desc: "身體呈一直線，胸口貼地再推起。"},
-                {id: "tm2", name: "寬距伏地挺身", muscle: "外胸", desc: "手掌寬於肩膀，減少三頭肌參與。"},
-                {id: "tm3", name: "折刀伏地挺身", muscle: "肩膀", desc: "屁股抬高呈倒V字，頭頂朝地板下放。"},
-                {id: "tm4", name: "椅子/床緣 撐體", muscle: "三頭肌", desc: "背對椅子，手撐邊緣，身體下沉。"},
-                {id: "tm5", name: "動態棒式", muscle: "核心/肩", desc: "由手肘撐地轉為手掌撐地，交互進行。"}
-            ], cooldown: "1. 找牆壁拉伸胸大肌 30s<br>2. 三頭肌伸展 30s" },
-        2: { name: "週二", focus: "拉 (出差版)", 
-            exercises: [
-                {id: "tt1", name: "門框划船", muscle: "背部", desc: "抓著門框邊緣，身體後傾，用背力把自己拉向門框。"},
-                {id: "tt2", name: "俯臥 W 字伸展", muscle: "後肩/上背", desc: "趴在地上，手肘彎曲呈W字，將手臂抬離地面。"},
-                {id: "tt3", name: "超人式", muscle: "下背", desc: "趴姿，同時抬起手跟腳，停留2秒。"},
-                {id: "tt4", name: "毛巾二頭對抗", muscle: "二頭肌", desc: "腳踩毛巾中段，雙手抓兩端用力向上拉，腿部給予阻力。"},
-                {id: "tt5", name: "鳥狗式", muscle: "核心/背", desc: "四足跪姿，對側手腳延伸。"}
-            ], cooldown: "1. 嬰兒式放鬆背部<br>2. 頸部側拉伸" },
-        3: { name: "週三", focus: "腿 (出差版)", 
-            exercises: [
-                {id: "tw1", name: "徒手深蹲", muscle: "股四頭", desc: "次數要多，速度放慢。"},
-                {id: "tw2", name: "後跨弓步蹲", muscle: "單腿/臀", desc: "交替向後跨步下蹲，膝蓋不觸地。"},
-                {id: "tw3", name: "單腳臀橋", muscle: "腿後/臀", desc: "躺姿，單腳踩地將屁股推高。"},
-                {id: "tw4", name: "保加利亞分腿蹲", muscle: "股四頭/臀", desc: "後腳背放在床沿或椅子上，前腳下蹲。"},
-                {id: "tw5", name: "小腿提踵", muscle: "小腿", desc: "單腳站立，手扶牆，腳跟抬起。"}
+            // 設定啞鈴參數
+            const barWidth = 140;   // 握把長度
+            const barThick = 25;    // 握把粗度
+            const plateW = 35;      // 每一片槓片的寬度
+            const plateH = 200;     // 槓片高度
+            const plateCount = 3;   // 一邊幾片 (象徵可調節)
+            const gap = 8;          // 槓片間距
+            
+            // 3. 陰影 (讓啞鈴有懸浮感)
+            ctx.shadowColor = "rgba(0, 0, 0, 0.3)";
+            ctx.shadowBlur = 20;
+            ctx.shadowOffsetY = 10;
+
+            // 4. 繪製握把
+            ctx.fillStyle = "#ecf0f1";
+            // 畫布已置中，所以 x 座標要扣掉一半寬度
+            roundedRect(ctx, -barWidth/2, -barThick/2, barWidth, barThick, 5);
+
+            // 5. 繪製槓片 (左右兩邊)
+            // 定義一個畫一邊槓片的函式
+            function drawPlates(direction) {
+                // direction: 1 為右邊, -1 為左邊
+                let startX = (barWidth / 2) * direction;
+                
+                for(let i = 0; i < plateCount; i++) {
+                    // 計算每一片的 X 座標
+                    // 如果是右邊，往右疊加；如果是左邊，往左疊加 (需考慮寬度)
+                    let x = direction === 1 
+                        ? startX + (i * (plateW + gap)) 
+                        : startX - ((i + 1) * (plateW + gap)) + gap; // 微調間距
+                    
+                    // 越外面的槓片稍微小一點點，做出造型感
+                    let currentH = plateH - (i * 15);
+                    let y = -currentH / 2;
+
+                    // 畫槓片主體
+                    ctx.fillStyle = "#ffffff";
+                    roundedRect(ctx, x, y, plateW - gap, currentH, 8);
+                    
+                    // 增加一點點裝飾線條 (質感)
+                    ctx.fillStyle = "rgba(0,0,0,0.1)";
+                    ctx.fillRect(x + 5, y + 10, (plateW - gap) - 10, currentH - 20);
+                }
+            }
+
+            drawPlates(1);  // 右邊
+            drawPlates(-1); // 左邊
+
+            ctx.restore(); // 恢復畫布旋轉狀態
+
+            // 6. 加上一點點反光 (Glossy effect) - 讓圖標看起來更像玻璃/寶石質感
+            ctx.globalCompositeOperation = 'source-over';
+            const shine = ctx.createLinearGradient(0, 0, 0, h);
+            shine.addColorStop(0, "rgba(255,255,255,0.1)");
+            shine.addColorStop(0.5, "rgba(255,255,255,0)");
+            ctx.fillStyle = shine;
+            ctx.fillRect(0, 0, w, h);
+        }
+
+        // 輔助函式：畫圓角矩形
+        function roundedRect(ctx, x, y, width, height, radius) {
+            ctx.beginPath();
+            ctx.moveTo(x + radius, y);
+            ctx.lineTo(x + width - radius, y);
+            ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+            ctx.lineTo(x + width, y + height - radius);
+            ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+            ctx.lineTo(x + radius, y + height);
+            ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+            ctx.lineTo(x, y + radius);
+            ctx.quadraticCurveTo(x, y, x + radius, y);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // 初始化繪圖
+        draw();
+
+        // 下載功能
+        function downloadIcon(size) {
+            const sourceCanvas = document.getElementById('canvasIcon');
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = size;
+            tempCanvas.height = size;
+            const tCtx = tempCanvas.getContext('2d');
+            
+            // 使用高品質縮放
+            tCtx.imageSmoothingEnabled = true;
+            tCtx.imageSmoothingQuality = "high";
+            tCtx.drawImage(sourceCanvas, 0, 0, size, size);
+
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = tempCanvas.toDataURL('image/png');
+            link.click();
+        }
+    </script>
+</body>
+</html>
