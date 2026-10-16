@@ -10,6 +10,7 @@ import { PlansScreen } from '../features/plans/PlansScreen';
 import { SettingsScreen } from '../features/settings/SettingsScreen';
 import { TodayWorkout } from '../features/today/TodayWorkout';
 import type { ExerciseDetailTab } from '../features/shared';
+import { useRepoQuery } from './context';
 import { goBack, matchPath, navigate, type Route } from './router';
 import { paths } from './paths';
 
@@ -52,10 +53,9 @@ export const ROUTES: ReadonlyArray<AppRoute> = [
     render: ({ params, query }) => {
       const t = query.get('tab') as ExerciseDetailTab | null;
       return (
-        <ExerciseDetail
+        <ExerciseDetailRoute
           exerciseId={params.id}
           initialTab={t && DETAIL_TABS.includes(t) ? t : undefined}
-          onClose={() => goBack()}
         />
       );
     },
@@ -64,7 +64,9 @@ export const ROUTES: ReadonlyArray<AppRoute> = [
     pattern: '/picker',
     title: '選擇動作',
     render: ({ query }) => (
-      <ExercisePicker mode={query.get('mode') === 'multi' ? 'multi' : 'single'} onClose={() => goBack()} />
+      <div class="route-embed">
+        <ExercisePicker mode={query.get('mode') === 'multi' ? 'multi' : 'single'} onClose={() => goBack()} />
+      </div>
     ),
   },
   {
@@ -73,6 +75,20 @@ export const ROUTES: ReadonlyArray<AppRoute> = [
     render: () => <OnboardingFlow onDone={() => navigate(paths.today, { replace: true })} />,
   },
 ];
+
+/**
+ * 動作詳情路由。元件自帶標頭（返回鈕＋動作名稱）與外殼標頭重複：app.css 隱藏元件標頭（.route-embed 內），
+ * 外殼標頭保留返回與標題「動作詳情」，動作名稱改由這裡以 h2 顯示。
+ */
+function ExerciseDetailRoute({ exerciseId, initialTab }: { exerciseId: string; initialTab?: ExerciseDetailTab }) {
+  const ex = useRepoQuery((r) => r.exercises.get(exerciseId), [exerciseId]);
+  return (
+    <div class="route-embed">
+      {ex.data ? <h2 class="route-embed__name">{ex.data.name}</h2> : null}
+      <ExerciseDetail exerciseId={exerciseId} initialTab={initialTab} onClose={() => goBack()} />
+    </div>
+  );
+}
 
 export interface ResolvedRoute {
   route: AppRoute;

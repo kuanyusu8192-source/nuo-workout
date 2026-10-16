@@ -66,3 +66,17 @@
 }
 .app-nav__item.is-current { color: var(--primary-600); border-top-color: var(--primary-600); }
 .app-nav__item:active { background: #e6edf3; }
+
+/* ---- 標頭去重 ----
+   動作詳情／動作選擇元件自帶標頭（返回鈕＋標題），放進路由或 Sheet 時會與外殼標頭／Sheet 標頭重複。
+   只隱藏重複的返回鈕與標題，保留元件標頭裡其他功能鈕（新增自訂動作、完成）。 */
+.route-embed .exp-picker .exp-head > button[aria-label="返回"],
+.route-embed .exp-picker .exp-head__title,
+.nuo-sheet__body .exp-head > button[aria-label="返回"],
+.nuo-sheet__body .exp-picker .exp-head__title { display: none; }
+/* 動作詳情放在 Sheet 內：Sheet 標題已是動作名稱、右上有 X，整列隱藏 */
+.nuo-sheet__body .exp-detail > .exp-head,
+.route-embed .exp-detail > .exp-head { display: none; }
+.route-embed__name { margin: 0 0 12px; font-size: 20px; line-height: 1.2; }
+
+.app-boot { max-width: 560px; margin: 0 auto; padding: 16px; }

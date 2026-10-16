@@ -7,7 +7,7 @@
 | 路徑 | 畫面 | 備註 |
 |---|---|---|
 | `#/today` `#/history` `#/plans` `#/diet` `#/settings` | 五個分頁畫面 | 有底部分頁列；根畫面，返回鍵 = 離開 App |
-| `#/exercise/:id?tab=tutorial\|record\|chart\|history` | `ExerciseDetail` | 全螢幕子頁，標頭有返回鈕 |
+| `#/exercise/:id?tab=tutorial\|record\|chart\|history` | `ExerciseDetail` | 全螢幕子頁；外殼標頭有返回鈕，元件自帶標頭由 CSS 隱藏（見「標頭去重」） |
 | `#/picker?mode=single\|multi` | `ExercisePicker` | 路由僅供獨立使用／開發；功能內嵌請直接放進 `<Sheet>` |
 | `#/onboarding` | `OnboardingFlow` | 首次問卷 |
 | 空 hash | 導向 `#/today` | |
@@ -16,10 +16,12 @@
 
 ## 契約
 
-- **Repos 注入**：`<ReposProvider repos>` / `useRepos()`。啟動時 `bootstrap()`（`bootstrap.ts`）用 `createRepos()`（`createRepos.ts`）建立實作：預設記憶體版，`?db=dexie` 或 `VITE_DB=dexie` 換 Dexie 版（P4）。
+- **Repos 注入**：`<ReposProvider repos>` / `useRepos()`。啟動時 `<Boot>`（`Boot.tsx`，載入中 Skeleton／失敗可重試）呼叫 `bootstrap()`（`bootstrap.ts`），用 `createRepos()`（`createRepos.ts`）建立實作：**正式環境預設 Dexie**，`?fake=1`／`?db=memory`（或 `VITE_DB=memory`）用記憶體版，測試環境（vitest）預設記憶體版。Dexie 模式啟動時以 `EXERCISE_SEED_VERSION`（`bootstrap.ts`，動作庫 JSON 變動時加 1）灌入動作庫，並以 `<BackupServiceProvider>` 注入備份服務。
+- **首次啟動**：`App` 內的 `FirstRunGate` 掛載時檢查 `repos.profile.get()`，沒有就 `navigate(paths.onboarding, {replace:true})`；問卷完成導向今日（問卷頁沒有底部分頁列）。
+- **標頭去重**：動作詳情／動作選擇元件自帶「返回＋標題」標頭。放進路由時外殼標頭保留返回與標題，`.route-embed` 內的元件標頭由 `app.css` 隱藏（動作名稱改由路由包裝層以 h2 顯示）；放進 `<Sheet>` 時由 `.nuo-sheet__body` 規則隱藏，只留 Sheet 的 X。新增嵌入元件請沿用這兩個容器。
 - **AppState**：`useAppState()` → `mode`（gear/travel/backfill）、`setMode`、`activePlanId`、`setActivePlanId`（會寫入 repo）、`selectedDate`、`setSelectedDate`、`today`、`dataVersion`、`invalidate()`。離開補記模式會把 `selectedDate` 重設為今天。
 - **資料 hooks**：`useRepoQuery((repos) => repos.sessions.getByDate(d), [d])` → `{ data, error, loading, reload }`；`useAsync(fn, deps)` 同形。寫入資料後呼叫 `invalidate()`，所有 `useRepoQuery` 自動重查。重新載入時保留舊 `data`（不閃爍）。
-- **返回鍵**：面板／彈窗用 `useBackHandler(onClose, open)`（`Sheet`／`Modal` 已內建）。返回時先關「最上層」，沒有就返回上一頁，根畫面則呼叫 `<App onExit>`。目前由 `popstate` 與自訂事件 `nuo:back`（`dispatchBackEvent()`）模擬；Capacitor 之後只要在 `App.addListener('backButton', ...)` 裡呼叫 `dispatchBackEvent()`。
+- **返回鍵**：面板／彈窗用 `useBackHandler(onClose, open)`（`Sheet`／`Modal` 已內建）。返回時先關「最上層」，沒有就返回上一頁，根畫面則呼叫 `<App onExit>`。導覽與回收的協調：標記條目回收時若 hash 已變（剛 `navigate` 離開），就不再 `history.go(-n)`（以免蓋掉新路由），遺留的標記在使用者按返回時自動跳過。目前由 `popstate` 與自訂事件 `nuo:back`（`dispatchBackEvent()`）模擬；Capacitor 之後只要在 `App.addListener('backButton', ...)` 裡呼叫 `dispatchBackEvent()`。
 - **跨功能元件簽名**（stub 在 `src/features/**`，只可填實作、不可改簽名）：`ExercisePickerProps`、`ExerciseDetailProps`、`CelebrationProps`（`kinds` 型別 = `PrKind`，`src/domain/pr.ts`）。
 
 ## 如何新增畫面
@@ -31,7 +33,7 @@
 
 ## 用假資料開發
 
-`npm run dev` 後開 `http://localhost:5173/?fake=1`：啟動時灌入真實動作庫＋約 8 週訓練、3 個課表、器材版／出差版週計畫、8 筆體重、profile、今天與昨天的飲食（`src/dev/fakeData.ts`，固定亂數種子；訓練只到昨天，所以「今天」可直接測開始訓練）。不帶 `fake` 則只灌動作庫（空白狀態）。`?fake=1` 只對記憶體版生效，不會污染 Dexie。測試中：`await seedFakeData(repos, { today: '2026-10-16' })`、`seedEmptyData(repos)`。
+`npm run dev` 後開 `http://localhost:5173/?fake=1`：啟動時灌入真實動作庫＋約 8 週訓練、3 個課表、器材版／出差版週計畫、8 筆體重、profile、今天與昨天的飲食（`src/dev/fakeData.ts`，固定亂數種子；訓練只到昨天，所以「今天」可直接測開始訓練）。不帶 `fake` 則是 Dexie 版（空白狀態、首次會進問卷）。`?fake=1` 強制記憶體版，不會污染 Dexie。測試中：`await seedFakeData(repos, { today: '2026-10-16' })`、`seedEmptyData(repos)`。
 
 ## 樣式
 

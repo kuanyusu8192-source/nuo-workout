@@ -1,11 +1,13 @@
+import type { ComponentChildren } from 'preact';
 import { useEffect } from 'preact/hooks';
 import { EmptyState } from '../components/EmptyState';
 import { Icon } from '../components/Icon';
 import { IconButton } from '../components/IconButton';
 import { ToastProvider } from '../components/Toast';
+import { Skeleton } from '../components/Skeleton';
 import { MODE_COLOR_VAR, MODE_LABELS } from '../features/shared';
 import { installBackHandling } from './back';
-import { AppStateProvider, useAppState } from './context';
+import { AppStateProvider, useAppState, useAsync, useRepos } from './context';
 import { goBack, href, navigate, parseHash, useRoute } from './router';
 import { resolveRoute, TABS } from './routes';
 import { paths } from './paths';
@@ -20,10 +22,35 @@ export function App({ onExit }: AppProps) {
   return (
     <AppStateProvider>
       <ToastProvider>
-        <Shell onExit={onExit} />
+        <FirstRunGate>
+          <Shell onExit={onExit} />
+        </FirstRunGate>
       </ToastProvider>
     </AppStateProvider>
   );
+}
+
+/**
+ * 首次啟動：還沒有 profile 就導向問卷（replace，返回鍵不會回到被取代的畫面）。
+ * 只在掛載時檢查一次；檢查完成前顯示 Skeleton，避免先閃一下今日畫面。檢查失敗不擋 App（當作已有資料）。
+ */
+function FirstRunGate({ children }: { children?: ComponentChildren }) {
+  const repos = useRepos();
+  const q = useAsync(async () => {
+    const profile = await repos.profile.get();
+    if (!profile && parseHash(window.location.hash).pathname !== paths.onboarding) {
+      navigate(paths.onboarding, { replace: true });
+    }
+    return true;
+  }, [repos]);
+  if (q.loading && !q.data && !q.error) {
+    return (
+      <main class="app-boot">
+        <Skeleton height={48} lines={4} label="載入中" />
+      </main>
+    );
+  }
+  return <>{children}</>;
 }
 
 /** 外殼本體（不含 Provider）；測試可在自己的 AppStateProvider 內渲染它 */

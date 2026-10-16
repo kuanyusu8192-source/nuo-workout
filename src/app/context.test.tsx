@@ -140,4 +140,13 @@ describe('createRepos', () => {
     expect(resolveDbKind('?db=memory', 'dexie')).toBe('memory');
     expect(createRepos('memory').sessions).toBeTruthy();
   });
+
+  it('正式（非測試）環境預設 Dexie；?fake=1 與 ?db=memory 才用記憶體版', () => {
+    expect(resolveDbKind('', undefined, false)).toBe('dexie');
+    expect(resolveDbKind('?fake=1', undefined, false)).toBe('memory');
+    expect(resolveDbKind('?db=memory', undefined, false)).toBe('memory');
+    expect(resolveDbKind('?db=dexie&fake=1', undefined, false)).toBe('dexie');
+    expect(resolveDbKind('', 'memory', false)).toBe('memory');
+    expect(resolveDbKind('', undefined, true)).toBe('memory');
+  });
 });

@@ -11,18 +11,21 @@ export const BACK_EVENT = 'nuo:back';
 
 interface Entry {
   fn: () => void;
+  /** 推入標記條目時的 hash。若回收時 hash 已不同＝期間發生過導覽，標記條目已被埋在歷史深處，不可再 go(-n)（會把剛導向的路由蓋掉） */
+  hash: string;
   /** 由 popstate 觸發關閉：標記條目已被瀏覽器消耗，註銷時不必再 history.back() */
   closedByPop: boolean;
 }
 
 const stack: Entry[] = [];
 let ignorePops = 0;
-/** UI 自行關閉而待回收的標記條目數；同一個 tick 內合併成一次 history.go(-n)（只會觸發一次 popstate） */
-let pendingUiBack = 0;
+/** UI 自行關閉而待回收的標記條目（記錄當時的 hash）；同一個 tick 內合併成一次 history.go(-n)（只會觸發一次 popstate） */
+let pendingUiBack: string[] = [];
 
 function flushUiBack() {
-  const n = pendingUiBack;
-  pendingUiBack = 0;
+  // 只回收仍在最上層的標記：期間 hash 變過（navigate）的，標記已被埋在歷史中，留給 onPop 的「殘留標記」處理
+  const n = pendingUiBack.filter((h) => h === window.location.hash).length;
+  pendingUiBack = [];
   if (n > 0) {
     ignorePops++;
     window.history.go(-n);
@@ -38,14 +41,14 @@ function ensurePopListener() {
 
 export function registerBackHandler(fn: () => void): () => void {
   ensurePopListener();
-  const entry: Entry = { fn, closedByPop: false };
+  const entry: Entry = { fn, hash: window.location.hash, closedByPop: false };
   stack.push(entry);
   window.history.pushState({ nuoLayer: true }, '');
   return () => {
     const i = stack.indexOf(entry);
     if (i >= 0) stack.splice(i, 1);
     if (!entry.closedByPop) {
-      if (pendingUiBack++ === 0) queueMicrotask(flushUiBack);
+      if (pendingUiBack.push(entry.hash) === 1) queueMicrotask(flushUiBack);
     }
   };
 }
@@ -64,6 +67,14 @@ export const backStackSize = (): number => stack.length;
 function onPop() {
   if (ignorePops > 0) {
     ignorePops--;
+    return;
+  }
+  // 沒有任何 handler 卻退到標記條目＝導覽後遺留的殘留標記：直接跳過它，使用者不必多按一次返回
+  if (stack.length === 0) {
+    if ((window.history.state as { nuoLayer?: boolean } | null)?.nuoLayer) {
+      ignorePops++;
+      window.history.back();
+    }
     return;
   }
   runBackHandler(true);

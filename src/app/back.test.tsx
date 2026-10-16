@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/preact';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/preact';
 import { useState } from 'preact/hooks';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { backStackSize, dispatchBackEvent, installBackHandling, runBackHandler, useBackHandler } from './back';
@@ -65,11 +65,49 @@ describe('返回鍵堆疊', () => {
     const r = render(<Layer onBack={close} />);
     await tick();
     window.history.back();
-    await tick();
-    expect(close).toHaveBeenCalledTimes(1);
+    // jsdom 的 history 遍歷是非同步的，高負載時可能超過固定等待，所以等條件成立
+    await waitFor(() => expect(close).toHaveBeenCalledTimes(1), { timeout: 5000 });
     await unmount(r);
     await tick();
     off();
+  });
+});
+
+describe('導覽與標記條目回收的協調', () => {
+  it('先 navigate 才卸載：不會用 history.go 蓋掉新路由；殘留標記在返回時自動跳過', async () => {
+    window.location.hash = '#/a';
+    await tick();
+    const r = render(<Layer onBack={() => {}} />);
+    await tick();
+    window.location.hash = '#/b';
+    await tick();
+    await unmount(r);
+    // 「不會被蓋掉」是負面斷言：要給錯誤的 history.go 足夠時間觸發，高負載下 30ms 太短
+    await act(async () => { await new Promise((res) => setTimeout(res, 300)); });
+    expect(window.location.hash).toBe('#/b');
+    window.history.back(); // 退到殘留標記 → 自動再退一步到原本的 #/a
+    await waitFor(() => expect(window.location.hash).toBe('#/a'), { timeout: 5000 });
+    // 先落在殘留標記（hash 也是 #/a、state 有標記），再被自動跳過
+    await waitFor(
+      () => expect((window.history.state as { nuoLayer?: boolean } | null)?.nuoLayer).toBeFalsy(),
+      { timeout: 5000 },
+    );
+  });
+
+  it('同一個 tick 內關閉並 navigate：新路由保持不變', async () => {
+    window.location.hash = '#/a';
+    await tick();
+    function Host() {
+      const [open, setOpen] = useState(true);
+      return <>{open ? <Layer onBack={() => {}} /> : null}<button onClick={() => { setOpen(false); window.location.hash = '#/c'; }}>go</button></>;
+    }
+    render(<Host />);
+    await tick();
+    fireEvent.click(screen.getByRole('button', { name: 'go' }));
+    await tick();
+    await tick();
+    expect(window.location.hash).toBe('#/c');
+    expect(backStackSize()).toBe(0);
   });
 });
 
