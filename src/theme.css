@@ -1,0 +1,121 @@
+/* NUO 設計資源：色票、字型、基礎樣式（依 docs/reverse/NUO介面設計規範 第 2~3、6 節）。
+   「文字／底色」對比配對列於 scripts/contrast-pairs.json，由 npm run check:contrast 驗證。 */
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/barlow-condensed-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/barlow-condensed-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/barlow-condensed-latin-600-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/barlow-latin-400-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/barlow-latin-500-normal.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Barlow';
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  src: url('./assets/fonts/barlow-latin-600-normal.woff2') format('woff2');
+}
+
+:root {
+  --ink: #2c3e50;
+  --ink-2: #5d6d7e;
+  --bg: #f0f2f5;
+  --card: #ffffff;
+  --primary: #3498db;
+  --primary-600: #2471a3;
+  --success: #27ae60;
+  --success-600: #1e8449;
+  --warning: #f39c12;
+  --on-warning: #2c3e50;
+  --danger: #e74c3c;
+  --danger-600: #c0392b;
+  --travel: #9b59b6;
+  --backfill: #d35400;
+  --line: #d5dbe0;
+  --radius: 14px;
+  --gap: 8px;
+  --z-nav: 20;
+  --z-sheet: 30;
+  --z-modal: 40;
+  --z-toast: 50;
+
+  --font-num: 'Barlow Condensed', system-ui, sans-serif;
+  --font-body: 'Barlow', system-ui, -apple-system, 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* 最小觸控尺寸 44x44 */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* 數字大標（重量、計時、容量） */
+.num {
+  font-family: var(--font-num);
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 3px solid var(--primary-600);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}

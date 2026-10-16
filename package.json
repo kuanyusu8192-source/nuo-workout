@@ -8,7 +8,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:contrast": "node scripts/check-contrast.mjs",
+    "copy:gifs": "node scripts/copy-gifs.mjs --from C:/Users/FARRAH/Documents/volumex-extract/gifs",
+    "build:exercises": "node scripts/build-exercises.mjs --from C:/Users/FARRAH/Documents/volumex-extract/final_merged_exercises.json --out src/assets/exercises.json"
   },
   "dependencies": {
     "dexie": "^4.4.6",

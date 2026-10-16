@@ -1,0 +1,9 @@
+[
+  { "name": "白字 on --primary-600", "fg": "#ffffff", "bg": "--primary-600" },
+  { "name": "白字 on --success-600", "fg": "#ffffff", "bg": "--success-600" },
+  { "name": "白字 on --danger-600", "fg": "#ffffff", "bg": "--danger-600" },
+  { "name": "--on-warning on --warning", "fg": "--on-warning", "bg": "--warning" },
+  { "name": "--ink-2 on --card", "fg": "--ink-2", "bg": "--card" },
+  { "name": "--ink on --bg", "fg": "--ink", "bg": "--bg" },
+  { "name": "白字 on --travel", "fg": "#ffffff", "bg": "--travel" }
+]
