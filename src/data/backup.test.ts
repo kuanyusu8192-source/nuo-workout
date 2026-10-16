@@ -73,6 +73,26 @@ describe('importBackup', () => {
     expect(await db2.exercises.count()).toBe(3);
   });
 
+  it('新欄位 isTravel／order 來回保留；舊檔缺欄位仍可匯入', async () => {
+    const t = (await r.templates.list())[0];
+    await r.templates.update(t.id, { order: 2 });
+    await r.plans.create({ name: '出差', days: { 0: null }, isTravel: true });
+    const f = JSON.parse(JSON.stringify(await exportBackup(db)));
+    expect(f.version).toBe(1);
+    expect(f.data.plans.find((p: { name: string }) => p.name === '出差').isTravel).toBe(true);
+    expect(f.data.templates[0].order).toBe(2);
+    const db2 = new NuoDB(`backup-${Date.now()}-${seq++}`);
+    await importBackup(db2, f, 'replace');
+    const r2 = createDexieRepos(db2);
+    expect((await r2.templates.list())[0].order).toBe(2);
+    expect((await r2.plans.list()).find((p) => p.name === '出差')?.isTravel).toBe(true);
+    const old = JSON.parse(JSON.stringify(await exportBackup(db)));
+    for (const p of old.data.plans) delete p.isTravel;
+    for (const x of old.data.templates) delete x.order;
+    await expect(importBackup(db2, old, 'replace')).resolves.toBeTruthy();
+    expect((await r2.plans.list()).every((p) => !p.isTravel)).toBe(true);
+  });
+
   it('replace 會清掉現有的非備份資料', async () => {
     const f = await exportBackup(db);
     await r.meals.add({ date: '2026-10-02', name: '多的', servings: 1, proteinG: 0, carbG: 0, fatG: 0, kcal: 1 });
@@ -106,6 +126,8 @@ describe('importBackup', () => {
     await bad((f) => { f.data.settings[0].weightUnit = 'oz'; return f; }, /settings/);
     await bad((f) => { f.data.exercises[0].source = 'volumex'; return f; }, /exercises/);
     await bad((f) => { f.data.sessions.push(null); return f; }, /sessions/);
+    await bad((f) => { f.data.plans[0].isTravel = 'yes'; return f; }, /plans.*isTravel/);
+    await bad((f) => { f.data.templates[0].order = '1'; return f; }, /templates.*order/);
   });
 
   it('交易中途失敗（重複主鍵）整批回滾', async () => {

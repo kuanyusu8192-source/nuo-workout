@@ -6,6 +6,10 @@ import type {
 } from './types';
 
 export const BACKUP_APP = 'nuo-fit';
+/**
+ * 備份格式版本。新增「選用欄位」（如 plans.isTravel、templates.order）向下相容：
+ * 舊檔缺欄位照常匯入，故維持 1；只有破壞性變更（改欄位意義、必填欄位）才遞增。
+ */
 export const BACKUP_VERSION = 1;
 
 export interface BackupData {
@@ -40,8 +44,8 @@ const SCHEMA: Record<keyof BackupData, Spec> = {
   favoriteExercises: { exerciseId: 'string' },
   sessions: { id: 'string', date: 'string', startedAt: 'number', endedAt: 'number?', templateId: 'string?', planId: 'string?', mode: 'string', note: 'string?' },
   sets: { id: 'string', sessionId: 'string', exerciseId: 'string', setIndex: 'number', kind: 'string', weightKg: 'number?', reps: 'number?', durationSec: 'number?', distanceM: 'number?', speed: 'number?', incline: 'number?', watts: 'number?', floors: 'number?', createdAt: 'number' },
-  templates: { id: 'string', name: 'string', color: 'string', exercises: 'array', cooldownText: 'string?', createdAt: 'number' },
-  plans: { id: 'string', name: 'string', days: 'object', isActive: 'boolean' },
+  templates: { id: 'string', name: 'string', color: 'string', exercises: 'array', cooldownText: 'string?', createdAt: 'number', order: 'number?' },
+  plans: { id: 'string', name: 'string', days: 'object', isActive: 'boolean', isTravel: 'boolean?' },
   bodyMetrics: { id: 'string', date: 'string', weightKg: 'number?', bodyFatPct: 'number?' },
   profile: { id: 'number', tdee: 'number', kcalTarget: 'number', macros: 'object' },
   meals: { id: 'string', date: 'string', name: 'string', grams: 'number?', servings: 'number', proteinG: 'number', carbG: 'number', fatG: 'number', kcal: 'number', per100g: 'object?' },

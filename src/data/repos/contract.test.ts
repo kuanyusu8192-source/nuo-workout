@@ -191,6 +191,38 @@ describe.each(factories)('repository 合約：%s', (_label, make) => {
     });
   });
 
+  describe('templates：order / reorder', () => {
+    const mk = (name: string, createdAt: number, order?: number) =>
+      r.templates.create({ name, color: '#000', exercises: [], createdAt, ...(order === undefined ? {} : { order }) });
+    const names = async () => (await r.templates.list()).map((t) => t.name);
+
+    it('list 依 order 升冪，缺值排後面，再依 createdAt', async () => {
+      await mk('無序舊', 1);
+      await mk('B', 5, 1);
+      await mk('無序新', 9);
+      await mk('A', 8, 0);
+      expect(await names()).toEqual(['A', 'B', '無序舊', '無序新']);
+    });
+    it('reorder 依給定順序重寫 order，未列入者排在後面；未知 id 忽略', async () => {
+      const a = await mk('A', 1);
+      const b = await mk('B', 2);
+      const c = await mk('C', 3);
+      await r.templates.reorder([c.id, 'nope', a.id]);
+      expect(await names()).toEqual(['C', 'A', 'B']);
+      expect((await r.templates.get(c.id))?.order).toBe(0);
+      expect((await r.templates.get(a.id))?.order).toBe(1);
+      await r.templates.reorder([b.id, c.id, a.id]);
+      expect(await names()).toEqual(['B', 'C', 'A']);
+    });
+    it('duplicate 不沿用 order（排到最後）', async () => {
+      const a = await mk('A', 1, 0);
+      await mk('B', 2, 1);
+      const d = await r.templates.duplicate(a.id);
+      expect('order' in d).toBe(false);
+      expect((await names())[2]).toContain('複製');
+    });
+  });
+
   describe('plans', () => {
     const days = { 0: null, 1: 't1', 2: null, 3: 't2', 4: null, 5: null, 6: null };
     it('CRUD 與 setActive 互斥', async () => {
@@ -210,6 +242,17 @@ describe.each(factories)('repository 合約：%s', (_label, make) => {
       expect(await r.plans.getActive()).toBeUndefined();
       await expect(r.plans.setActive('nope')).rejects.toThrow();
     });
+    it('isTravel 可於 create／update 寫入；缺欄位視為未設定', async () => {
+      const a = await r.plans.create({ name: '一般', days });
+      expect(a.isTravel).toBeUndefined();
+      expect(Boolean((await r.plans.get(a.id))?.isTravel)).toBe(false);
+      const t = await r.plans.create({ name: '出差', days, isTravel: true });
+      expect((await r.plans.get(t.id))?.isTravel).toBe(true);
+      expect((await r.plans.update(a.id, { isTravel: true })).isTravel).toBe(true);
+      expect((await r.plans.update(a.id, { isTravel: false })).isTravel).toBe(false);
+      const cleared = await r.plans.update(a.id, { isTravel: undefined });
+      expect('isTravel' in cleared).toBe(false);
+    });
   });
 
   describe('bodyMetrics', () => {
@@ -221,6 +264,14 @@ describe.each(factories)('repository 合約：%s', (_label, make) => {
       expect((await r.bodyMetrics.list()).map((m) => m.date)).toEqual(['2026-10-01', '2026-10-05', '2026-10-09']);
       expect((await r.bodyMetrics.list({ from: '2026-10-02', to: '2026-10-06' })).map((m) => m.date)).toEqual(['2026-10-05']);
       expect((await r.bodyMetrics.latest())?.weightKg).toBe(69.5);
+    });
+    it('remove 刪除指定一筆；找不到靜默忽略', async () => {
+      const a = await r.bodyMetrics.add({ date: '2026-10-01', weightKg: 70 });
+      const b = await r.bodyMetrics.add({ date: '2026-10-02', weightKg: 71 });
+      await r.bodyMetrics.remove(b.id);
+      expect((await r.bodyMetrics.list()).map((m) => m.id)).toEqual([a.id]);
+      expect((await r.bodyMetrics.latest())?.id).toBe(a.id);
+      await expect(r.bodyMetrics.remove('nope')).resolves.toBeUndefined();
     });
   });
 
@@ -252,6 +303,17 @@ describe.each(factories)('repository 合約：%s', (_label, make) => {
       expect(await r.meals.listByDate('2026-10-01')).toEqual([]);
       await expect(r.meals.update('nope', { servings: 1 })).rejects.toThrow();
     });
+    it('listByRange：閉區間、可省略端點', async () => {
+      await r.meals.add({ ...meal, date: '2026-09-30' });
+      await r.meals.add({ ...meal, date: '2026-10-01' });
+      await r.meals.add({ ...meal, date: '2026-10-31' });
+      await r.meals.add({ ...meal, date: '2026-11-01' });
+      const d = async (range: { from?: string; to?: string }) => (await r.meals.listByRange(range)).map((m) => m.date);
+      expect(await d({ from: '2026-10-01', to: '2026-10-31' })).toEqual(['2026-10-01', '2026-10-31']);
+      expect(await d({ to: '2026-10-01' })).toEqual(['2026-09-30', '2026-10-01']);
+      expect(await d({ from: '2026-10-31' })).toEqual(['2026-10-31', '2026-11-01']);
+      expect(await d({})).toHaveLength(4);
+    });
     it('favorites 新增與移除', async () => {
       expect(await r.meals.favorites()).toEqual([]);
       const f = await r.meals.addFavorite({ name: '常吃', proteinG: 1, carbG: 2, fatG: 3, kcal: 40 });
@@ -269,6 +331,65 @@ describe.each(factories)('repository 合約：%s', (_label, make) => {
       expect(await r.burnOverrides.get('2026-10-01')).toBe(350);
       await r.burnOverrides.clear('2026-10-01');
       expect(await r.burnOverrides.get('2026-10-01')).toBeUndefined();
+    });
+  });
+
+  describe('burnOverrides.listByRange', () => {
+    it('回傳範圍內全部覆寫（依日期排序），一次查詢取代逐日 get', async () => {
+      await r.burnOverrides.set('2026-10-20', 200);
+      await r.burnOverrides.set('2026-09-30', 100);
+      await r.burnOverrides.set('2026-10-01', 300);
+      await r.burnOverrides.set('2026-11-01', 400);
+      expect(await r.burnOverrides.listByRange({ from: '2026-10-01', to: '2026-10-31' })).toEqual([
+        { date: '2026-10-01', kcal: 300 },
+        { date: '2026-10-20', kcal: 200 },
+      ]);
+      expect(await r.burnOverrides.listByRange({})).toHaveLength(4);
+      expect(await r.burnOverrides.listByRange({ from: '2027-01-01' })).toEqual([]);
+    });
+  });
+
+  describe('patch 語意：值為 undefined 的欄位會被移除', () => {
+    it('sets.update 清空 weightKg／reps，其餘欄位保留，且持久', async () => {
+      const s = await r.sessions.create({ date: '2026-10-01', mode: 'gear' });
+      const x = await r.sets.add({ sessionId: s.id, exerciseId: 'a', setIndex: 0, kind: 'strength', weightKg: 50, reps: 5, createdAt: 7 });
+      const u = await r.sets.update(x.id, { weightKg: undefined, reps: undefined });
+      expect('weightKg' in u).toBe(false);
+      expect('reps' in u).toBe(false);
+      expect(u.exerciseId).toBe('a');
+      const got = (await r.sets.listBySession(s.id))[0];
+      expect(Object.keys(got).sort()).toEqual(['createdAt', 'exerciseId', 'id', 'kind', 'sessionId', 'setIndex']);
+    });
+    it('meals.update 清除 grams／per100g', async () => {
+      const m = await r.meals.add({ date: '2026-10-01', name: '飯', grams: 100, servings: 1, proteinG: 1, carbG: 2, fatG: 3, kcal: 40, per100g: { proteinG: 1, carbG: 2, fatG: 3, kcal: 40 } });
+      const u = await r.meals.update(m.id, { grams: undefined, per100g: undefined, servings: 2 });
+      expect('grams' in u).toBe(false);
+      expect('per100g' in u).toBe(false);
+      expect(u.servings).toBe(2);
+      const got = (await r.meals.listByDate('2026-10-01'))[0];
+      expect('grams' in got).toBe(false);
+      expect('per100g' in got).toBe(false);
+    });
+    it('templates.update 清除 cooldownText', async () => {
+      const t = await r.templates.create({ name: 'T', color: '#000', exercises: [], cooldownText: '伸展' });
+      const u = await r.templates.update(t.id, { cooldownText: undefined });
+      expect('cooldownText' in u).toBe(false);
+      expect('cooldownText' in (await r.templates.get(t.id))!).toBe(false);
+    });
+    it('templates.update 清除 order 後回到未排序', async () => {
+      const t = await r.templates.create({ name: 'T', color: '#000', exercises: [], order: 3 });
+      const u = await r.templates.update(t.id, { order: undefined });
+      expect('order' in u).toBe(false);
+    });
+    it('plans.update 只改有提到的欄位', async () => {
+      const p = await r.plans.create({ name: 'P', days: { 0: null } });
+      const u = await r.plans.update(p.id, { name: 'Q' });
+      expect(u.days).toEqual({ 0: null });
+    });
+    it('sessions.end 保留其他欄位', async () => {
+      const s = await r.sessions.create({ date: '2026-10-01', mode: 'gear', note: 'n' });
+      const e = await r.sessions.end(s.id, 5);
+      expect(e).toMatchObject({ endedAt: 5, note: 'n' });
     });
   });
 

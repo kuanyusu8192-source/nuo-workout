@@ -1,7 +1,7 @@
 /** 記憶體版 repository：供 P3 畫面假資料與測試使用。行為須與 Dexie 版一致。 */
 import { newId } from '../db';
 import { DEFAULT_SETTINGS, type BodyMetric, type Exercise, type FavoriteMeal, type Meal, type PlanRow, type ProfileRow, type Session, type SetRow, type Settings, type Template } from '../types';
-import { byCreatedAt, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
+import { applyPatch, byCreatedAt, byTemplateOrder, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
 
 const clone = <T>(v: T): T => structuredClone(v);
 const missing = (what: string, id: string) => new Error(`${what} 不存在：${id}`);
@@ -83,8 +83,9 @@ export function createMemoryRepos(): Repos {
       async update(id, patch) {
         const row = sets.get(id);
         if (!row) throw missing('set', id);
-        Object.assign(row, clone(patch));
-        return clone(row);
+        const next = applyPatch(row, clone(patch)) as SetRow;
+        sets.set(id, next);
+        return clone(next);
       },
       async remove(id) {
         sets.delete(id);
@@ -116,13 +117,21 @@ export function createMemoryRepos(): Repos {
         return t && clone(t);
       },
       async list() {
-        return all(templates).sort(byCreatedAt);
+        return all(templates).sort(byTemplateOrder);
       },
       async update(id, patch) {
         const t = templates.get(id);
         if (!t) throw missing('template', id);
-        Object.assign(t, clone(patch));
-        return clone(t);
+        const next = applyPatch(t, clone(patch)) as Template;
+        templates.set(id, next);
+        return clone(next);
+      },
+      async reorder(ids) {
+        let i = 0;
+        for (const id of ids) {
+          const t = templates.get(id);
+          if (t) t.order = i++;
+        }
       },
       async remove(id) {
         templates.delete(id);
@@ -130,7 +139,8 @@ export function createMemoryRepos(): Repos {
       async duplicate(id) {
         const t = templates.get(id);
         if (!t) throw missing('template', id);
-        const d: Template = { ...clone(t), id: newId(), name: `${t.name} (複製)`, createdAt: Date.now() };
+        const { order: _order, ...rest } = clone(t);
+        const d: Template = { ...rest, id: newId(), name: `${t.name} (複製)`, createdAt: Date.now() };
         templates.set(d.id, d);
         return clone(d);
       },
@@ -153,8 +163,9 @@ export function createMemoryRepos(): Repos {
       async update(id, patch) {
         const p = plans.get(id);
         if (!p) throw missing('plan', id);
-        Object.assign(p, clone(patch));
-        return clone(p);
+        const next = applyPatch(p, clone(patch)) as PlanRow;
+        plans.set(id, next);
+        return clone(next);
       },
       async remove(id) {
         plans.delete(id);
@@ -182,6 +193,9 @@ export function createMemoryRepos(): Repos {
         const sorted = all(bodyMetrics).sort((a, b) => a.date.localeCompare(b.date));
         return sorted[sorted.length - 1];
       },
+      async remove(id) {
+        bodyMetrics.delete(id);
+      },
     },
 
     profile: {
@@ -203,14 +217,19 @@ export function createMemoryRepos(): Repos {
       async update(id, patch) {
         const m = meals.get(id);
         if (!m) throw missing('meal', id);
-        Object.assign(m, clone(patch));
-        return clone(m);
+        const next = applyPatch(m, clone(patch)) as Meal;
+        meals.set(id, next);
+        return clone(next);
       },
       async remove(id) {
         meals.delete(id);
       },
       async listByDate(date) {
         return all(meals).filter((m) => m.date === date);
+      },
+      async listByRange(range) {
+        // Array.prototype.sort 為穩定排序，同日維持寫入順序
+        return all(meals).filter((m) => inRange(m.date, range)).sort((a, b) => a.date.localeCompare(b.date));
       },
       async favorites() {
         return all(favMeals);
@@ -234,6 +253,12 @@ export function createMemoryRepos(): Repos {
       },
       async clear(date) {
         burn.delete(date);
+      },
+      async listByRange(range) {
+        return [...burn.entries()]
+          .filter(([date]) => inRange(date, range))
+          .map(([date, kcal]) => ({ date, kcal }))
+          .sort((a, b) => a.date.localeCompare(b.date));
       },
     },
 

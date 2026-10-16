@@ -2,7 +2,7 @@
 import type { EntityTable } from 'dexie';
 import { newId, type NuoDB } from '../db';
 import { DEFAULT_SETTINGS, type Exercise, type FavoriteMeal, type Meal, type PlanRow, type Session, type SetRow, type Template } from '../types';
-import { byCreatedAt, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
+import { applyPatch, byCreatedAt, byTemplateOrder, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
 
 const missing = (what: string, id: string) => new Error(`${what} 不存在：${id}`);
 
@@ -16,7 +16,7 @@ export function createDexieRepos(db: NuoDB): Repos {
   ): Promise<T> {
     const row = (await table.get(id as never)) as T | undefined;
     if (!row) throw missing(what, id);
-    const next = { ...row, ...patch, id };
+    const next = { ...applyPatch(row, patch), id };
     await table.put(next as T);
     return next as T;
   }
@@ -110,16 +110,25 @@ export function createDexieRepos(db: NuoDB): Repos {
       },
       get: (id) => db.templates.get(id),
       async list() {
-        return (await db.templates.toArray()).sort(byCreatedAt);
+        return (await db.templates.toArray()).sort(byTemplateOrder);
       },
       update: (id, patch) => patchRow<Template>(db.templates, 'template', id, patch),
+      async reorder(ids) {
+        await db.transaction('rw', db.templates, async () => {
+          let i = 0;
+          for (const id of ids) {
+            if ((await db.templates.where('id').equals(id).modify({ order: i })) > 0) i++;
+          }
+        });
+      },
       async remove(id) {
         await db.templates.delete(id);
       },
       async duplicate(id) {
         const t = await db.templates.get(id);
         if (!t) throw missing('template', id);
-        const d: Template = { ...t, id: newId(), name: `${t.name} (複製)`, createdAt: Date.now() };
+        const { order: _order, ...rest } = t;
+        const d: Template = { ...rest, id: newId(), name: `${t.name} (複製)`, createdAt: Date.now() };
         await db.templates.add(d);
         return d;
       },
@@ -162,6 +171,9 @@ export function createDexieRepos(db: NuoDB): Repos {
         return rows.sort((a, b) => a.date.localeCompare(b.date));
       },
       latest: () => db.bodyMetrics.orderBy('date').last(),
+      async remove(id) {
+        await db.bodyMetrics.delete(id);
+      },
     },
 
     profile: {
@@ -184,6 +196,11 @@ export function createDexieRepos(db: NuoDB): Repos {
         await db.meals.delete(id);
       },
       listByDate: (date) => db.meals.where('date').equals(date).toArray(),
+      async listByRange(range) {
+        const lo = range.from ?? '';
+        const hi = range.to ?? '\uffff';
+        return db.meals.where('date').between(lo, hi, true, true).toArray();
+      },
       favorites: () => db.favoriteMeals.toArray(),
       async addFavorite(input) {
         const f: FavoriteMeal = { ...input, id: newId() };
@@ -204,6 +221,11 @@ export function createDexieRepos(db: NuoDB): Repos {
       },
       async clear(date) {
         await db.burnOverrides.delete(date);
+      },
+      async listByRange(range) {
+        const lo = range.from ?? '';
+        const hi = range.to ?? '\uffff';
+        return db.burnOverrides.where('date').between(lo, hi, true, true).toArray();
       },
     },
 

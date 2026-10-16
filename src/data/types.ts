@@ -70,10 +70,14 @@ export interface Template {
   exercises: TemplateExercise[];
   cooldownText?: string;
   createdAt: number;
+  /** 課表排序（小者在前）；缺值排在有值者之後，再依 createdAt */
+  order?: number;
 }
 
 export interface PlanRow extends Plan {
   isActive: boolean;
+  /** 出差版標記；缺值視為 false */
+  isTravel?: boolean;
 }
 
 export interface BodyMetric {
