@@ -1,0 +1,7 @@
+node_modules
+dist
+www/gifs/
+android/app/build
+android/.gradle
+*.local
+volumex-extract/
