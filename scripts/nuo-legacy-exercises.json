@@ -1,0 +1,449 @@
+[
+  {
+    "id": "nuo-db-bench",
+    "name": "啞鈴臥推",
+    "category": "胸",
+    "equipment": "啞鈴",
+    "steps": [
+      "仰臥，雙腳踩實，肩胛骨收緊貼背。",
+      "雙手持鈴於胸線，手肘與身體呈45度。",
+      "吐氣上推至手臂伸直，吸氣慢放。"
+    ]
+  },
+  {
+    "id": "nuo-db-incline",
+    "name": "上斜臥推",
+    "category": "胸",
+    "equipment": "啞鈴",
+    "steps": [
+      "椅背調至30-45度，專攻上胸。",
+      "落點控制在鎖骨下方，不聳肩。",
+      "手臂保持垂直地面推起。"
+    ]
+  },
+  {
+    "id": "nuo-db-fly",
+    "name": "啞鈴飛鳥",
+    "category": "胸",
+    "equipment": "啞鈴",
+    "steps": [
+      "手肘微彎固定角度，像抱大樹一樣打開。",
+      "下放至大手臂平行地面即可。",
+      "用胸肌力量夾回，不是用手推。"
+    ]
+  },
+  {
+    "id": "nuo-bw-pushup",
+    "name": "伏地挺身",
+    "category": "胸",
+    "equipment": "自重",
+    "steps": [
+      "手掌撐地略寬於肩，身體呈直線。",
+      "胸口下沉至接近地板。",
+      "推起時手臂伸直但肘不鎖死。"
+    ]
+  },
+  {
+    "id": "nuo-bw-diamond",
+    "name": "鑽石伏地挺身",
+    "category": "胸",
+    "equipment": "自重",
+    "steps": [
+      "雙手食指拇指相對呈鑽石狀。",
+      "專注三頭肌與內胸發力。",
+      "難度較高，可採跪姿。"
+    ]
+  },
+  {
+    "id": "nuo-db-row-one",
+    "name": "單臂划船",
+    "category": "背",
+    "equipment": "啞鈴",
+    "steps": [
+      "單手單膝支撐於臥推椅，背部打直。",
+      "將啞鈴向後上方拉至髖部位置。",
+      "下放時讓背肌完全拉伸。"
+    ]
+  },
+  {
+    "id": "nuo-db-row-bent",
+    "name": "雙手划船",
+    "category": "背",
+    "equipment": "啞鈴",
+    "steps": [
+      "雙腳與肩同寬，屁股後推，俯身約45度。",
+      "收緊核心，雙手同時向後拉。",
+      "夾緊肩胛骨一秒後慢放。"
+    ]
+  },
+  {
+    "id": "nuo-db-deadlift",
+    "name": "啞鈴硬舉",
+    "category": "背",
+    "equipment": "啞鈴",
+    "steps": [
+      "雙腳與臀同寬，啞鈴貼腿下放。",
+      "髖部向後推 (Hip Hinge)，背部始終打直。",
+      "臀部發力向前推回站立姿勢。"
+    ]
+  },
+  {
+    "id": "nuo-bw-superman",
+    "name": "超人式",
+    "category": "背",
+    "equipment": "自重",
+    "steps": [
+      "趴姿，手腳向前延伸。",
+      "同時抬起手腳離地，停頓1-2秒。",
+      "訓練下背豎脊肌。"
+    ]
+  },
+  {
+    "id": "nuo-bw-door-row",
+    "name": "門框划船",
+    "category": "背",
+    "equipment": "自重",
+    "steps": [
+      "雙手抓穩門框邊緣，腳步向前。",
+      "身體後傾，用背力拉向門框。",
+      "控制回放速度。"
+    ]
+  },
+  {
+    "id": "nuo-db-goblet",
+    "name": "高腳杯深蹲",
+    "category": "臀腿",
+    "equipment": "啞鈴",
+    "steps": [
+      "雙手捧啞鈴於胸前，手肘向內收。",
+      "挺胸，屁股向下坐，膝蓋對齊腳尖。",
+      "蹲至大腿平行地面，腳跟發力站起。"
+    ]
+  },
+  {
+    "id": "nuo-db-lunge",
+    "name": "弓步蹲",
+    "category": "臀腿",
+    "equipment": "啞鈴",
+    "steps": [
+      "雙手持鈴，單腳向前跨步下蹲。",
+      "重心在雙腳之間，後膝接近地板不觸地。",
+      "前腳腳跟發力推回原位。"
+    ]
+  },
+  {
+    "id": "nuo-db-rdl",
+    "name": "羅馬尼亞硬舉",
+    "category": "臀腿",
+    "equipment": "啞鈴",
+    "steps": [
+      "膝蓋微彎鎖死，專注在屁股後推。",
+      "感受大腿後側拉扯感，啞鈴下放至脛骨。",
+      "保持背部平直，利用腿後力量拉起。"
+    ]
+  },
+  {
+    "id": "nuo-bw-squat",
+    "name": "深蹲",
+    "category": "臀腿",
+    "equipment": "自重",
+    "steps": [
+      "雙腳與肩同寬。",
+      "屁股後坐，保持背部挺直。",
+      "適合高次數訓練。"
+    ]
+  },
+  {
+    "id": "nuo-bw-glute-bridge",
+    "name": "臀橋",
+    "category": "臀腿",
+    "equipment": "自重",
+    "steps": [
+      "躺姿，膝蓋彎曲腳踩地。",
+      "臀部發力向上推高至直線。",
+      "頂峰收縮臀肌。"
+    ]
+  },
+  {
+    "id": "nuo-bw-wall-sit",
+    "name": "太空椅",
+    "category": "臀腿",
+    "equipment": "自重",
+    "steps": [
+      "背貼牆，下蹲至大腿平行地面。",
+      "保持靜止，支撐至力竭。",
+      "訓練股四頭肌耐力。"
+    ]
+  },
+  {
+    "id": "nuo-db-ohp",
+    "name": "坐姿肩推",
+    "category": "肩",
+    "equipment": "啞鈴",
+    "steps": [
+      "椅背調直，核心收緊避免折腰。",
+      "啞鈴下放至耳垂高度，手肘垂直地面。",
+      "吐氣上推過頭，不鎖死手肘。"
+    ]
+  },
+  {
+    "id": "nuo-db-lat-raise",
+    "name": "側平舉",
+    "category": "肩",
+    "equipment": "啞鈴",
+    "steps": [
+      "身體微前傾，手肘微彎固定。",
+      "像倒水一樣將手肘抬至肩膀高度。",
+      "避免借力甩動，專注中束感受。"
+    ]
+  },
+  {
+    "id": "nuo-bw-pike-pushup",
+    "name": "折刀伏地挺身",
+    "category": "肩",
+    "equipment": "自重",
+    "steps": [
+      "雙手撐地，屁股抬高呈倒V字。",
+      "頭頂朝地板方向下放。",
+      "推起，模擬肩推軌跡。"
+    ]
+  },
+  {
+    "id": "nuo-db-curl",
+    "name": "站姿彎舉",
+    "category": "手臂",
+    "equipment": "啞鈴",
+    "steps": [
+      "大臂夾緊身體兩側不動。",
+      "只有前臂移動，捲起啞鈴至胸前。",
+      "頂峰收縮二頭肌，慢速下放。"
+    ]
+  },
+  {
+    "id": "nuo-db-tri-ext",
+    "name": "三頭屈伸",
+    "category": "手臂",
+    "equipment": "啞鈴",
+    "steps": [
+      "雙手托住啞鈴一端置於腦後。",
+      "大臂夾緊頭部兩側不動，僅伸直前臂。",
+      "感受手臂後側拉伸與收縮。"
+    ]
+  },
+  {
+    "id": "nuo-bw-dips",
+    "name": "椅子撐體",
+    "category": "手臂",
+    "equipment": "自重",
+    "steps": [
+      "雙手撐於椅緣，雙腳伸直或彎曲。",
+      "身體下沉至手肘90度。",
+      "用三頭肌推起。"
+    ]
+  },
+  {
+    "id": "nuo-db-russian",
+    "name": "俄羅斯轉體",
+    "category": "核心",
+    "equipment": "啞鈴",
+    "steps": [
+      "坐姿，雙腳懸空，身體後傾45度。",
+      "雙手持鈴，轉動肩膀帶動身體左右轉。",
+      "視線跟隨啞鈴移動。"
+    ]
+  },
+  {
+    "id": "nuo-bw-plank",
+    "name": "棒式",
+    "category": "核心",
+    "equipment": "自重",
+    "steps": [
+      "手肘撐地，身體呈一直線。",
+      "收緊腹部與臀部，不塌腰。",
+      "保持呼吸。"
+    ]
+  },
+  {
+    "id": "nuo-bw-burpee",
+    "name": "波比跳",
+    "category": "有氧",
+    "equipment": "自重",
+    "steps": [
+      "下蹲撐地 -> 伏地挺身 -> 收腿 -> 跳起。",
+      "連續動作，燃脂首選。"
+    ]
+  },
+  {
+    "id": "nuo-bw-climber",
+    "name": "登山者",
+    "category": "有氧",
+    "equipment": "自重",
+    "steps": [
+      "伏地挺身姿勢。",
+      "膝蓋交替快速提向胸口。",
+      "保持核心穩定。"
+    ]
+  },
+  {
+    "id": "nuo-cd-chest-swing",
+    "name": "擴胸擺手",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "站立，雙手向兩側打開感受胸肌拉伸，再交叉抱胸。輕快節奏重複 20 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-doorway-chest-stretch",
+    "name": "門框胸肌伸展",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "找一個門框或牆角，手肘抵住，身體前傾。保持 30 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-behind-back-clasp",
+    "name": "背後互扣拉伸",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "雙手在背後十指互扣，手臂伸直並向上抬起。保持 20 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-cat-cow",
+    "name": "貓牛式",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "四足跪姿，吸氣塌腰抬頭，吐氣拱背低頭。重複 10 次。"
+    ]
+  },
+  {
+    "id": "nuo-cd-childs-pose",
+    "name": "嬰兒式",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "跪姿，臀部坐向腳跟，雙手向前延伸趴下。保持 40 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-lat-side-stretch",
+    "name": "背闊肌側拉",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "左手舉高過頭向右側彎曲，感受左側背部拉伸。換邊各 20 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-leg-swing",
+    "name": "前後擺腿",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "手扶牆，單腳前後輕鬆擺動 10 次，放鬆髖關節。換邊。"
+    ]
+  },
+  {
+    "id": "nuo-cd-quad-stretch",
+    "name": "股四頭拉伸",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "單腳站立，一手抓住同側腳踝往後拉向臀部。各 30 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-seated-forward-fold",
+    "name": "坐姿體前彎",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "雙腿伸直，上半身前傾雙手抓腳尖，伸展腿後側。30 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-pigeon-pose",
+    "name": "鴿式",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "伸展臀部外側與髖部。若太難可改為坐姿翹二郎腿抱膝。各 30 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-arm-circles",
+    "name": "手臂畫圓",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "雙手向兩側伸直，慢慢畫大圓，順逆時鐘各 10 次。"
+    ]
+  },
+  {
+    "id": "nuo-cd-cross-body-shoulder-stretch",
+    "name": "十字扣伸展",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "左手橫過胸前，右手勾住左手肘往身體拉。各 20 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-neck-side-stretch",
+    "name": "頸部側拉伸",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "一手輕壓頭部往同側倒，另一手往下延伸。各 15 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-wrist-rotation",
+    "name": "手腕轉動",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "雙手十指交扣，轉動手腕放鬆前臂。"
+    ]
+  },
+  {
+    "id": "nuo-cd-triceps-stretch",
+    "name": "三頭肌伸展",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "一手舉高彎曲手肘摸背，另一手輕壓肘部向下。各 20 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-biceps-stretch",
+    "name": "二頭肌伸展",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "手掌貼牆，手臂伸直，身體往反方向旋轉。各 20 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-standing-twist",
+    "name": "站姿轉體",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "雙腳寬站，雙手放鬆左右轉動上半身。重複 20 秒。"
+    ]
+  },
+  {
+    "id": "nuo-cd-cobra-pose",
+    "name": "眼鏡蛇式",
+    "category": "伸展",
+    "equipment": "自重",
+    "steps": [
+      "趴姿，手掌撐地將上半身推起，視線看上方，伸展腹肌。30 秒。"
+    ]
+  }
+]
