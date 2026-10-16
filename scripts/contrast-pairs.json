@@ -1,9 +1,62 @@
 [
-  { "name": "白字 on --primary-600", "fg": "#ffffff", "bg": "--primary-600" },
-  { "name": "白字 on --success-600", "fg": "#ffffff", "bg": "--success-600" },
-  { "name": "白字 on --danger-600", "fg": "#ffffff", "bg": "--danger-600" },
-  { "name": "--on-warning on --warning", "fg": "--on-warning", "bg": "--warning" },
-  { "name": "--ink-2 on --card", "fg": "--ink-2", "bg": "--card" },
-  { "name": "--ink on --bg", "fg": "--ink", "bg": "--bg" },
-  { "name": "白字 on --travel", "fg": "#ffffff", "bg": "--travel" }
+  {
+    "name": "白字 on --primary-600",
+    "fg": "#ffffff",
+    "bg": "--primary-600"
+  },
+  {
+    "name": "白字 on --success-600",
+    "fg": "#ffffff",
+    "bg": "--success-600"
+  },
+  {
+    "name": "白字 on --danger-600",
+    "fg": "#ffffff",
+    "bg": "--danger-600"
+  },
+  {
+    "name": "--on-warning on --warning",
+    "fg": "--on-warning",
+    "bg": "--warning"
+  },
+  {
+    "name": "--ink-2 on --card",
+    "fg": "--ink-2",
+    "bg": "--card"
+  },
+  {
+    "name": "--ink on --bg",
+    "fg": "--ink",
+    "bg": "--bg"
+  },
+  {
+    "name": "白字 on --travel",
+    "fg": "#ffffff",
+    "bg": "--travel"
+  },
+  {
+    "name": "白字 on --ink（標頭、Toast）",
+    "fg": "#ffffff",
+    "bg": "--ink"
+  },
+  {
+    "name": "--ink on 白（模式標籤膠囊）",
+    "fg": "--ink",
+    "bg": "#ffffff"
+  },
+  {
+    "name": "--danger-600 on --card（錯誤訊息）",
+    "fg": "--danger-600",
+    "bg": "--card"
+  },
+  {
+    "name": "--primary-600 on --card（連結、當前分頁）",
+    "fg": "--primary-600",
+    "bg": "--card"
+  },
+  {
+    "name": "--success-600 on --card（PR 文字）",
+    "fg": "--success-600",
+    "bg": "--card"
+  }
 ]

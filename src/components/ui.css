@@ -1,0 +1,229 @@
+/* 共用元件樣式。所有可點元素 >= 44x44，焦點樣式由 theme.css 的 :focus-visible 提供。
+   z-index 階層：導覽 20、面板 30、彈窗 40、提示 50（theme.css 變數）。 */
+
+.nuo-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Button ---------- */
+.nuo-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  min-height: 48px;
+  min-width: 44px;
+  padding: 0 20px;
+  border: 2px solid transparent;
+  border-radius: var(--radius);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 150ms, opacity 150ms;
+}
+.nuo-btn--block { display: flex; width: 100%; }
+.nuo-btn--primary { background: var(--primary-600); color: #fff; }
+.nuo-btn--success { background: var(--success-600); color: #fff; }
+.nuo-btn--danger { background: var(--danger-600); color: #fff; }
+.nuo-btn--ghost { background: transparent; color: var(--primary-600); border-color: var(--primary-600); }
+.nuo-btn--primary:active { background: #1b5580; }
+.nuo-btn--success:active { background: #145c32; }
+.nuo-btn--danger:active { background: #8e2a20; }
+.nuo-btn--ghost:active { background: rgba(36, 113, 163, 0.12); }
+.nuo-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.nuo-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.nuo-iconbtn:active { background: rgba(44, 62, 80, 0.12); }
+.nuo-iconbtn--primary { background: var(--primary-600); color: #fff; }
+.nuo-iconbtn--danger { color: var(--danger-600); }
+.nuo-iconbtn--onDark { color: #fff; }
+.nuo-iconbtn--onDark:active { background: rgba(255, 255, 255, 0.2); }
+.nuo-iconbtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.nuo-linkbtn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--primary-600);
+  font: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* ---------- Card ---------- */
+.nuo-card {
+  display: block;
+  width: 100%;
+  margin: 0 0 var(--gap);
+  padding: 16px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(44, 62, 80, 0.12);
+}
+.nuo-card--pressable { min-height: 44px; cursor: pointer; transition: background-color 150ms; }
+.nuo-card--pressable:active { background: #e6edf3; }
+.nuo-card__title { margin: 0 0 var(--gap); font-size: 18px; line-height: 1.3; }
+
+/* ---------- 對話層（Sheet / Modal） ---------- */
+.nuo-layer { position: fixed; inset: 0; }
+.nuo-layer--sheet { z-index: var(--z-sheet); }
+.nuo-layer--modal { z-index: var(--z-modal); display: flex; align-items: center; justify-content: center; padding: 16px; }
+.nuo-backdrop { position: absolute; inset: 0; background: rgba(44, 62, 80, 0.5); }
+.nuo-sheet,
+.nuo-modal {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  max-height: 88vh;
+  background: var(--card);
+  color: var(--ink);
+  outline: none;
+}
+.nuo-sheet {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius) var(--radius) 0 0;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.nuo-modal { width: 100%; max-width: 420px; border-radius: var(--radius); }
+.nuo-sheet__head { display: flex; align-items: center; justify-content: space-between; padding: 8px 8px 8px 16px; border-bottom: 1px solid var(--line); }
+.nuo-sheet__title { margin: 0; font-size: 18px; }
+.nuo-sheet__body { padding: 16px; overflow-y: auto; }
+.nuo-sheet__foot { display: flex; gap: var(--gap); padding: 8px 16px 16px; }
+.nuo-sheet__foot > * { flex: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .nuo-sheet { animation: nuo-slide-up 220ms ease-out; }
+  .nuo-modal { animation: nuo-fade-in 180ms ease-out; }
+}
+@keyframes nuo-slide-up { from { transform: translateY(24px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes nuo-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* ---------- Tabs / Segmented ---------- */
+.nuo-tabs__list { display: flex; gap: var(--gap); border-bottom: 1px solid var(--line); overflow-x: auto; }
+.nuo-tab {
+  flex: 1 0 auto;
+  min-height: 48px;
+  min-width: 44px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.nuo-tab.is-selected { color: var(--primary-600); border-bottom-color: var(--primary-600); }
+.nuo-tabs__panel { padding-top: 16px; }
+
+.nuo-seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--radius); background: #e3e8ed; }
+.nuo-seg__item {
+  flex: 1;
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.nuo-seg__item.is-checked { background: var(--primary-600); color: #fff; }
+
+/* ---------- Field ---------- */
+.nuo-field { display: flex; flex-direction: column; gap: 4px; margin-bottom: 12px; }
+.nuo-field__label { font-weight: 600; font-size: 16px; }
+.nuo-input {
+  min-height: 48px;
+  padding: 0 12px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+.nuo-input--num { font-size: 22px; font-weight: 600; }
+.nuo-field.has-error .nuo-input { border-color: var(--danger-600); }
+.nuo-field__msg { margin: 0; font-size: 14px; color: var(--ink-2); }
+.nuo-field__msg--error { color: var(--danger-600); font-weight: 600; }
+
+/* ---------- EmptyState / Skeleton / Progress / Toast ---------- */
+.nuo-empty { display: flex; flex-direction: column; align-items: center; gap: var(--gap); padding: 32px 16px; text-align: center; color: var(--ink-2); }
+.nuo-empty__title { margin: 0; font-size: 18px; font-weight: 600; color: var(--ink); }
+.nuo-empty__desc { margin: 0; }
+
+.nuo-skeleton-group { display: flex; flex-direction: column; gap: var(--gap); }
+.nuo-skeleton { border-radius: 8px; background: linear-gradient(90deg, #e3e8ed 25%, #eef1f4 50%, #e3e8ed 75%); background-size: 200% 100%; animation: nuo-shimmer 1.2s linear infinite; }
+@keyframes nuo-shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+.nuo-progress { margin-bottom: 12px; }
+.nuo-progress__row { display: flex; justify-content: space-between; margin-bottom: 4px; font-weight: 600; }
+.nuo-progress__track { height: 12px; border-radius: 6px; background: #e3e8ed; overflow: hidden; }
+.nuo-progress__fill { height: 100%; border-radius: 6px; background: var(--primary-600); transition: width 300ms; }
+.nuo-progress.is-over .nuo-progress__fill { background: var(--danger-600); background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.35) 0 4px, transparent 4px 8px); }
+.nuo-progress.is-over .nuo-progress__value { color: var(--danger-600); }
+
+.nuo-toasts {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(72px + env(safe-area-inset-bottom));
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  pointer-events: none;
+}
+.nuo-toast { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); padding: 4px 4px 4px 16px; min-height: 48px; border-radius: var(--radius); background: var(--ink); color: #fff; pointer-events: auto; }
+.nuo-toast--success { background: var(--success-600); }
+.nuo-toast--error { background: var(--danger-600); }
+.nuo-toast__close { min-width: 44px; min-height: 44px; border: 0; background: transparent; color: inherit; font-size: 22px; cursor: pointer; }
+
+/* ---------- 圖表 ---------- */
+.nuo-chartbox { margin: 0 0 16px; padding: 12px 12px 4px; border-radius: var(--radius); background: var(--card); }
+.nuo-chartbox__title { margin-bottom: 4px; font-weight: 600; }
+.nuo-chart { display: block; max-width: 100%; }
+.nuo-tablewrap { overflow-x: auto; }
+.nuo-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.nuo-table th,
+.nuo-table td { padding: 8px; border-bottom: 1px solid var(--line); text-align: right; }
+.nuo-table th[scope='row'],
+.nuo-table thead th:first-child { text-align: left; }
+@media (prefers-reduced-motion: no-preference) {
+  .nuo-chart--animate .nuo-bar { transform-box: fill-box; transform-origin: bottom; animation: nuo-grow 300ms ease-out backwards; }
+  .nuo-chart--animate .nuo-line { stroke-dasharray: 1000; animation: nuo-draw 500ms ease-out; }
+}
+@keyframes nuo-grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes nuo-draw { from { stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }

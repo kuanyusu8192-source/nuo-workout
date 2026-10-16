@@ -24,7 +24,7 @@ describe('contrast', () => {
     const css = fs.readFileSync(path.join(root, 'src/theme.css'), 'utf8');
     const pairs = JSON.parse(fs.readFileSync(path.join(__dirname, 'contrast-pairs.json'), 'utf8'));
     const results = checkPairs(pairs, parseVars(css));
-    expect(results.length).toBe(7);
+    expect(results.length).toBe(12);
     for (const r of results) expect(r.ratio, r.name).toBeGreaterThanOrEqual(4.5);
   });
 });

@@ -5,6 +5,6 @@ export default defineConfig({
   plugins: [preact()],
   test: {
     environment: 'jsdom',
-    setupFiles: ['fake-indexeddb/auto'],
+    setupFiles: ['fake-indexeddb/auto', './src/test/setup.ts'],
   },
 });
