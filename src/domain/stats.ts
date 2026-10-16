@@ -1,9 +1,10 @@
 import type { DateStr, SetRecord } from './types';
 import { addDays, weekStart } from './dates';
+import { num, setVolume } from './strength';
 
 export type Metric = 'volume' | 'cardioMinutes';
 export interface Bar {
-  date: string;
+  date: DateStr;
   label: string;
   value: number;
 }
@@ -16,7 +17,7 @@ export function dailyVolume(sets: SetRecord[]): Record<DateStr, number> {
   const out: Record<DateStr, number> = {};
   for (const s of sets) {
     if (s.kind !== 'strength') continue;
-    out[s.date] = (out[s.date] ?? 0) + (s.weightKg ?? 0) * (s.reps ?? 0);
+    out[s.date] = (out[s.date] ?? 0) + setVolume(s);
   }
   return out;
 }
@@ -26,7 +27,7 @@ export function dailyCardioMinutes(sets: SetRecord[]): Record<DateStr, number> {
   const sec: Record<DateStr, number> = {};
   for (const s of sets) {
     if (s.kind !== 'cardio') continue;
-    sec[s.date] = (sec[s.date] ?? 0) + (s.durationSec ?? 0);
+    sec[s.date] = (sec[s.date] ?? 0) + num(s.durationSec);
   }
   const out: Record<DateStr, number> = {};
   for (const d of Object.keys(sec)) out[d] = round1(sec[d] / 60);
@@ -73,7 +74,7 @@ export function yearBars(sets: SetRecord[], year: number, metric: Metric = 'volu
   }));
 }
 
-/** 當月有任何紀錄的不重複日期數 */
+/** 當月有任何紀錄的不重複日期數。任何 kind（含伸展）都算訓練日。 */
 export function trainingDays(sets: SetRecord[], anyDateInMonth: DateStr): number {
   const prefix = anyDateInMonth.slice(0, 7);
   return new Set(sets.filter((s) => s.date.startsWith(prefix)).map((s) => s.date)).size;
@@ -92,13 +93,18 @@ export function streakWeeks(sets: SetRecord[], today: DateStr): number {
   return n;
 }
 
+/**
+ * 單日摘要。`sets` 為當日全部 kind（力量／有氧／伸展）的組數；
+ * `strengthSets` 僅力量組。
+ */
 export function daySummary(
   sets: SetRecord[],
   date: DateStr,
-): { sets: number; volume: number; cardioMinutes: number; exerciseCount: number } {
+): { sets: number; strengthSets: number; volume: number; cardioMinutes: number; exerciseCount: number } {
   const day = sets.filter((s) => s.date === date);
   return {
     sets: day.length,
+    strengthSets: day.filter((s) => s.kind === 'strength').length,
     volume: dailyVolume(day)[date] ?? 0,
     cardioMinutes: dailyCardioMinutes(day)[date] ?? 0,
     exerciseCount: new Set(day.map((s) => s.exerciseId)).size,

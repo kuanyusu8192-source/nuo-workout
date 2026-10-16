@@ -26,6 +26,51 @@ describe('acsmWalkRunMet', () => {
   it('走 5 km/h 坡度 5%', () => expect(acsmWalkRunMet({ speedKmh: 5, inclinePct: 5 })).toBeCloseTo(5.524, 2));
 });
 
+describe('acsmWalkRunMet 連續性（100–133.33 m/min 線性內插）', () => {
+  const f = (v: number) => acsmWalkRunMet({ speedKmh: v, inclinePct: 0 });
+  it('邊界相鄰值差距 < 0.6 MET', () => {
+    for (const v of [6, 7, 8]) expect(Math.abs(f(v + 0.01) - f(v))).toBeLessThan(0.6);
+    expect(Math.abs(f(6.01) - f(6))).toBeLessThan(0.6);
+    expect(Math.abs(f(8.01) - f(8))).toBeLessThan(0.6);
+  });
+  it('3–12 km/h 以 0.01 掃描無斷崖且單調不減', () => {
+    let prev = f(3);
+    for (let v = 3.01; v <= 12; v += 0.01) {
+      const cur = f(v);
+      expect(cur - prev).toBeGreaterThanOrEqual(0);
+      expect(cur - prev).toBeLessThan(0.6);
+      prev = cur;
+    }
+  });
+  it('8 km/h 為純跑步式、6 km/h 為純走路式', () => {
+    expect(f(8)).toBeCloseTo((0.2 * (8000 / 60) + 3.5) / 3.5, 6);
+    expect(f(6)).toBeCloseTo(13.5 / 3.5, 6);
+  });
+  it('7 km/h 介於兩式之間', () => {
+    expect(f(7)).toBeGreaterThan(f(6));
+    expect(f(7)).toBeLessThan(f(8));
+  });
+});
+
+describe('防護', () => {
+  it('burnKcal：met 非有限或負值 → null；Infinity 輸入 → null', () => {
+    for (const met of [NaN, -1, Infinity]) expect(burnKcal({ met, weightKg: 70, minutes: 60 })).toBeNull();
+    expect(burnKcal({ met: 5, weightKg: Infinity, minutes: 60 })).toBeNull();
+    expect(burnKcal({ met: 5, weightKg: 70, minutes: Infinity })).toBeNull();
+    expect(burnKcal({ met: 5, weightKg: 70, minutes: NaN })).toBe(0);
+  });
+  it('applyBurnOverride：NaN／負值／Infinity 退回自動', () => {
+    for (const o of [NaN, -5, Infinity]) expect(applyBurnOverride(100, o)).toBe(100);
+    expect(applyBurnOverride(null, NaN)).toBeNull();
+  });
+  it('strengthMinutes：setCount 負值／NaN 視為 0', () => {
+    expect(strengthMinutes({ setCount: -4 })).toBe(0);
+    expect(strengthMinutes({ setCount: NaN })).toBe(0);
+    expect(strengthMinutes({ timerSeconds: NaN, setCount: 2 })).toBe(6);
+    expect(strengthMinutes({ timerSeconds: Infinity, setCount: 2 })).toBe(6);
+  });
+});
+
 describe('CARDIO_MET_TABLE', () => {
   it('含常用項目', () => {
     const m = Object.fromEntries(CARDIO_MET_TABLE.map((e) => [e.id, e.met]));

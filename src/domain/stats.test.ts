@@ -22,10 +22,37 @@ describe('空陣列迴歸（刪光紀錄不得殘留）', () => {
     expect(dailyCardioMinutes([])).toEqual({});
     expect(trainingDays([], '2026-10-16')).toBe(0);
     expect(streakWeeks([], '2026-10-16')).toBe(0);
-    expect(daySummary([], '2026-10-16')).toEqual({ sets: 0, volume: 0, cardioMinutes: 0, exerciseCount: 0 });
+    expect(daySummary([], '2026-10-16')).toEqual({ sets: 0, strengthSets: 0, volume: 0, cardioMinutes: 0, exerciseCount: 0 });
     expect(weekBars([], '2026-10-16').every((b) => b.value === 0)).toBe(true);
     expect(monthBars([], '2026-10-16').every((b) => b.value === 0)).toBe(true);
     expect(yearBars([], 2026).every((b) => b.value === 0)).toBe(true);
+  });
+});
+
+describe('先有資料再移除最後一筆', () => {
+  it('全歸零', () => {
+    const d = '2026-10-16';
+    const sets = [s(d, 50, 10)];
+    expect(dailyVolume(sets)[d]).toBe(500);
+    expect(trainingDays(sets, d)).toBe(1);
+    expect(streakWeeks(sets, d)).toBe(1);
+    sets.pop();
+    expect(dailyVolume(sets)).toEqual({});
+    expect(trainingDays(sets, d)).toBe(0);
+    expect(streakWeeks(sets, d)).toBe(0);
+    expect(daySummary(sets, d)).toEqual({ sets: 0, strengthSets: 0, volume: 0, cardioMinutes: 0, exerciseCount: 0 });
+  });
+});
+
+describe('髒資料防護', () => {
+  const d = '2026-10-16';
+  it('dailyVolume 忽略 NaN／負值／Infinity', () => {
+    const r = dailyVolume([s(d, 50, 10), s(d, NaN, 10), s(d, -20, 10), s(d, 20, -5), s(d, Infinity, 3), s(d, 10, Infinity)]);
+    expect(r[d]).toBe(500);
+  });
+  it('dailyCardioMinutes 忽略 NaN／負值／Infinity', () => {
+    const r = dailyCardioMinutes([c(d, 600), c(d, NaN), c(d, -300), c(d, Infinity)]);
+    expect(r[d]).toBe(10);
   });
 });
 
@@ -136,6 +163,6 @@ describe('daySummary', () => {
       [s('2026-10-16', 50, 10, 'a'), s('2026-10-16', 50, 10, 'a'), s('2026-10-16', 20, 5, 'b'), c('2026-10-16', 90, 'run'), s('2026-10-17', 99, 9, 'z')],
       '2026-10-16',
     );
-    expect(r).toEqual({ sets: 4, volume: 1100, cardioMinutes: 1.5, exerciseCount: 3 });
+    expect(r).toEqual({ sets: 4, strengthSets: 3, volume: 1100, cardioMinutes: 1.5, exerciseCount: 3 });
   });
 });

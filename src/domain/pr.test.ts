@@ -48,6 +48,28 @@ describe('detectPr', () => {
     const cur = [mk('2026-02-01', 40, 10, { kind: 'cardio' }), mk('2026-02-01', 99, 9, { exerciseId: 'x' })];
     expect(detectPr([], cur, 'bench').isPr).toBe(false);
   });
+  it('浮點等值不誤報 e1rm：20×14 對 27.5×2', () => {
+    const h = [mk('2026-01-01', 20, 14)];
+    const r = detectPr(h, [mk('2026-02-01', 27.5, 2)], 'bench');
+    expect(r.kinds).not.toContain('e1rm');
+  });
+  it('浮點等值不誤報 e1rm：20×10 對 25×2', () => {
+    const h = [mk('2026-01-01', 20, 10)];
+    expect(detectPr(h, [mk('2026-02-01', 25, 2)], 'bench').kinds).not.toContain('e1rm');
+  });
+  it('history 與 current 重疊（剛存的組也在 history）仍正確判定', () => {
+    const h = [mk('2026-01-01', 60, 5)];
+    const cur = [mk('2026-02-01', 70, 5)];
+    expect(detectPr([...h, ...cur], cur, 'bench')).toEqual(detectPr(h, cur, 'bench'));
+    expect(detectPr([...h, ...cur], cur, 'bench').isPr).toBe(true);
+    // 重疊且為首次：不會因自己在 history 而漏報
+    expect(detectPr(cur, cur, 'bench').kinds).toEqual(['weight', 'e1rm', 'volume']);
+  });
+  it('current 跨多日只取最新那天', () => {
+    const h = [mk('2026-01-01', 60, 5)];
+    const cur = [mk('2026-02-01', 100, 10), mk('2026-02-02', 40, 5)];
+    expect(detectPr(h, cur, 'bench')).toEqual({ isPr: false, kinds: [] });
+  });
   it('持平不算新高', () => {
     const h = [mk('2026-01-01', 40, 10)];
     expect(detectPr(h, [mk('2026-02-01', 40, 10)], 'bench').isPr).toBe(false);
@@ -71,6 +93,9 @@ describe('nextMilestone', () => {
   it('超過最後一階', () => {
     expect(nextMilestone(1000000)).toEqual({ prev: 1000000, next: null, progress: 1 });
     expect(nextMilestone(5e6).next).toBeNull();
+  });
+  it('Infinity 視為超過最後一階', () => {
+    expect(nextMilestone(Infinity)).toEqual({ prev: 1000000, next: null, progress: 1 });
   });
   it('0、負數、NaN 皆為 0 進度', () => {
     for (const v of [0, -5, NaN]) expect(nextMilestone(v)).toEqual({ prev: 0, next: 10000, progress: 0 });

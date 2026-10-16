@@ -1,6 +1,8 @@
 import type { SetRecord } from './types';
 
-const num = (v: number | undefined): number => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+/** 共用數值清洗：有限且 >= 0 才保留，其餘（NaN、負值、±Infinity、undefined）一律視為 0。 */
+export const num = (v: number | undefined | null): number =>
+  typeof v === 'number' && Number.isFinite(v) && v > 0 ? v : 0;
 
 /** Epley 預估 1RM：w × (1 + reps/30)；reps = 1 取 w；無效輸入回傳 0。 */
 export function e1rm(weightKg: number, reps: number): number {

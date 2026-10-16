@@ -59,13 +59,14 @@ describe('parseHevy', () => {
     expect(r.sets).toHaveLength(4);
     expect(r.skipped).toEqual([]);
   });
-  it('warmup 加註並保留動作備註，組序為 1 起算', () => {
+  it('warmup 設 isWarmup 並保留動作備註，組序為 1 起算', () => {
     expect(r.sets[0]).toEqual({
       date: '2026-10-16', exerciseName: 'Bench Press (Barbell)', setIndex: 1,
       weight: 40, weightUnit: 'kg', reps: 10, durationSec: null, distanceM: null,
-      note: 'warmup; felt ok',
+      isWarmup: true, note: 'felt ok',
     });
     expect(r.sets[1].setIndex).toBe(2);
+    expect(r.sets[1].isWarmup).toBe(false);
     expect(r.sets[1].note).toBeUndefined();
   });
   it('重量 0 視為 null，動作名稱含逗號與引號', () => {
@@ -92,9 +93,9 @@ describe('parseHevy', () => {
     expect(x.skipped[1].reason).toMatch(/動作/);
   });
   it('缺欄位寬鬆處理', () => {
-    const x = parseHevy(parseCsv('start_time,exercise_title\n"01 Jan 2026, 10:00",Squat\n'));
+    const x = parseHevy(parseCsv('start_time,exercise_title,reps\n"01 Jan 2026, 10:00",Squat,5\n'));
     expect(x.sets).toEqual([
-      { date: '2026-01-01', exerciseName: 'Squat', setIndex: 1, weight: null, weightUnit: 'kg', reps: null, durationSec: null, distanceM: null },
+      { date: '2026-01-01', exerciseName: 'Squat', setIndex: 1, weight: null, weightUnit: 'kg', reps: 5, durationSec: null, distanceM: null, isWarmup: false },
     ]);
   });
 });
@@ -108,7 +109,7 @@ describe('parseStrong', () => {
   it('日期、單位、備註、組序', () => {
     expect(r.sets[0]).toEqual({
       date: '2026-10-16', exerciseName: 'Squat (Barbell)', setIndex: 1,
-      weight: 100, weightUnit: 'kg', reps: 5, durationSec: null, distanceM: null,
+      weight: 100, weightUnit: 'kg', reps: 5, durationSec: null, distanceM: null, isWarmup: false,
     });
     expect(r.sets[1]).toMatchObject({ setIndex: 2, note: 'heavy, slow' });
   });
@@ -128,7 +129,90 @@ describe('parseStrong', () => {
   });
   it('Set Order 為 W 視為 warmup', () => {
     const x = parseStrong(parseCsv(`${STRONG_HEADER}\n2026-10-16 10:00:00,W,1m,Squat,W,20,5,0,0,,,\n`));
-    expect(x.sets[0].note).toBe('warmup');
+    expect(x.sets[0].isWarmup).toBe(true);
+    expect(x.sets[0].note).toBeUndefined();
+  });
+});
+
+describe('全空數值列', () => {
+  it('Hevy：weight/reps/duration/distance 皆空 → skipped', () => {
+    const x = parseHevy(parseCsv(`${HEVY_HEADER}
+"A","16 Oct 2026, 17:36","","",Squat,,,0,normal,,,,,
+"A","16 Oct 2026, 17:36","","",Squat,,,1,normal,50,5,,,
+`));
+    expect(x.sets).toHaveLength(1);
+    expect(x.skipped).toHaveLength(1);
+    expect(x.skipped[0].line).toBe(2);
+    expect(x.skipped[0].reason).toMatch(/數值/);
+  });
+  it('Strong：0 值也視為空', () => {
+    const x = parseStrong(parseCsv(`${STRONG_HEADER}
+2026-10-16 10:00:00,W,1m,Squat,1,0,0,0,0,,,
+`));
+    expect(x.sets).toHaveLength(0);
+    expect(x.skipped).toHaveLength(1);
+  });
+});
+
+describe('日期驗證', () => {
+  it('Hevy 不存在的日期 → skipped', () => {
+    const csv = [HEVY_HEADER, ...['31 Feb 2026, 10:00', '45 Oct 2026, 10:00', '2026-13-45 10:00'].map((d) => `"A","${d}","","",Squat,,,0,normal,50,5,,,`)].join('\n');
+    const x = parseHevy(parseCsv(csv));
+    expect(x.sets).toHaveLength(0);
+    expect(x.skipped.map((s) => s.line)).toEqual([2, 3, 4]);
+    expect(x.skipped[0].reason).toMatch(/日期/);
+  });
+  it('Strong 不存在的日期 → skipped；閏日合法', () => {
+    const csv = [STRONG_HEADER, '2026-13-45 10:00:00,W,1m,Squat,1,50,5,0,0,,,', '2026-02-29 10:00:00,W,1m,Squat,1,50,5,0,0,,,', '2028-02-29 10:00:00,W,1m,Squat,1,50,5,0,0,,,'].join('\n');
+    const x = parseStrong(parseCsv(csv));
+    expect(x.sets.map((s) => s.date)).toEqual(['2028-02-29']);
+    expect(x.skipped.map((s) => s.line)).toEqual([2, 3]);
+  });
+});
+
+describe('數值欄位格式', () => {
+  it('小數逗號 62,5 → 62.5', () => {
+    const x = parseStrong(parseCsv(`${STRONG_HEADER}
+2026-10-16 10:00:00,W,1m,Squat,1,"62,5",5,0,0,,,
+`));
+    expect(x.sets[0].weight).toBe(62.5);
+    expect(x.skipped).toEqual([]);
+  });
+  it('無法解析的非空欄位 → 整列 skipped 並說明欄位', () => {
+    const x = parseStrong(parseCsv(`${STRONG_HEADER}
+2026-10-16 10:00:00,W,1m,Squat,1,abc,5,0,0,,,
+2026-10-16 10:00:00,W,1m,Squat,1,"1,234,5",5,0,0,,,
+`));
+    expect(x.sets).toHaveLength(0);
+    expect(x.skipped).toHaveLength(2);
+    expect(x.skipped[0].reason).toMatch(/weight/);
+  });
+  it('Hevy 小數逗號', () => {
+    const x = parseHevy(parseCsv(`${HEVY_HEADER}
+"A","16 Oct 2026, 17:36","","",Squat,,,0,normal,"62,5",5,,,
+`));
+    expect(x.sets[0].weight).toBe(62.5);
+  });
+});
+
+describe('未閉合引號', () => {
+  it('parseImport 回傳 unterminated_quote 警告，且前面的列照常解析', () => {
+    const r = parseImport(`${STRONG_HEADER}
+2026-10-16 10:00:00,W,1m,Squat,1,50,5,0,0,,,
+2026-10-17 10:00:00,W,1m,"Bad,1,50,5,0,0,,,
+2026-10-18 10:00:00,W,1m,Squat,1,50,5,0,0,,,
+`);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.warnings).toHaveLength(1);
+      expect(r.warnings[0].code).toBe('unterminated_quote');
+      expect(r.warnings[0].line).toBe(3);
+      expect(r.sets.length).toBeGreaterThanOrEqual(1);
+    }
+  });
+  it('正常檔案 warnings 為空', () => {
+    const r = parseImport(HEVY_CSV);
+    if (r.ok) expect(r.warnings).toEqual([]);
   });
 });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bmr, tdee, goalMultiplier, kcalTarget, macrosFromKcal, kcalFromMacros, remainingKcal, PAL_LEVELS } from './nutrition';
+import { isValidPal, bmr, tdee, goalMultiplier, kcalTarget, macrosFromKcal, kcalFromMacros, remainingKcal, PAL_LEVELS } from './nutrition';
 import type { Profile } from './types';
 
 // 樣本：30 歲、175 cm、70 kg
@@ -47,5 +47,38 @@ describe('PAL_LEVELS', () => {
   it('五級係數與名稱', () => {
     expect(PAL_LEVELS.map((l) => l.value)).toEqual([1.2, 1.375, 1.55, 1.725, 1.9]);
     expect(PAL_LEVELS[0].label).toContain('久坐');
+  });
+});
+
+describe('防護', () => {
+  const p: Profile = { sex: 'female', age: 30, heightCm: 160, weightKg: 50, pal: 1.55, goal: 'maintain' };
+  it('體重 0、身高 0 的女性 BMR 為負 → 0', () => {
+    expect(bmr({ sex: 'female', age: 30, heightCm: 0, weightKg: 0 })).toBe(0);
+  });
+  it('女性小體型高齡負 BMR → 0，下游全為 0', () => {
+    const small: Profile = { ...p, age: 80, heightCm: 50, weightKg: 10 };
+    expect(bmr(small)).toBe(0);
+    expect(tdee(small)).toBe(0);
+    expect(kcalTarget(small)).toBe(0);
+  });
+  it('NaN／Infinity 輸入 → 0', () => {
+    expect(bmr({ sex: 'male', age: NaN, heightCm: 170, weightKg: 70 })).toBe(0);
+    expect(tdee({ ...p, pal: NaN })).toBe(0);
+    expect(kcalTarget({ ...p, weightKg: Infinity })).toBe(0);
+  });
+  it('年齡負值不產生 NaN／負數', () => {
+    const v = bmr({ sex: 'male', age: -10, heightCm: 170, weightKg: 70 });
+    expect(Number.isFinite(v) && v >= 0).toBe(true);
+  });
+  it('macrosFromKcal 非有限或負 → 0', () => {
+    for (const k of [NaN, -100, Infinity]) expect(macrosFromKcal(k)).toEqual({ proteinG: 0, carbG: 0, fatG: 0 });
+  });
+  it('remainingKcal：burn null／NaN 視為 0', () => {
+    expect(remainingKcal({ target: 2000, eaten: 500, burn: null, countBurn: true })).toBe(1500);
+    expect(remainingKcal({ target: 2000, eaten: 500, burn: NaN, countBurn: true })).toBe(1500);
+  });
+  it('isValidPal', () => {
+    for (const l of PAL_LEVELS) expect(isValidPal(l.value)).toBe(true);
+    for (const v of [0, -1, NaN, Infinity, 5]) expect(isValidPal(v)).toBe(false);
   });
 });

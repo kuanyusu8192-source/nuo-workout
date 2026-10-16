@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { SetRecord } from './types';
-import { e1rm, peakE1rm, setVolume, totalVolume } from './strength';
+import { e1rm, num, peakE1rm, setVolume, totalVolume } from './strength';
 
 const mk = (p: Partial<SetRecord>): SetRecord => ({
   id: 'x', exerciseId: 'e', date: '2026-01-01', kind: 'strength', createdAt: 0, ...p,
@@ -47,4 +47,12 @@ describe('peakE1rm', () => {
     expect(peakE1rm(sets)).toBe(100);
   });
   it('只有非力量組為 0', () => expect(peakE1rm([mk({ kind: 'stretch', weightKg: 9, reps: 9 })])).toBe(0));
+});
+
+describe('num', () => {
+  it('有限且 >=0 才保留，其餘為 0', () => {
+    expect(num(5)).toBe(5);
+    expect(num(0)).toBe(0);
+    for (const v of [NaN, -3, Infinity, -Infinity, undefined]) expect(num(v)).toBe(0);
+  });
 });
