@@ -1,0 +1,203 @@
+/* 飲食畫面樣式。色票只用 theme.css 變數；可點元素 >= 44px；字級 >= 16px；z-index 用 --z-*。 */
+
+.diet { padding-bottom: 8px; }
+
+/* ---------- 日期條 ---------- */
+.diet-strip { display: flex; gap: 4px; }
+.diet-day {
+  flex: 1 1 0;
+  min-width: 44px;
+  min-height: 64px;
+  padding: 4px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  background: #eef1f4;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+.diet-day:active { background: #dde3e9; }
+.diet-day.is-today { border-color: var(--primary-600); }
+.diet-day.is-selected { background: var(--primary-600); color: #fff; }
+.diet-day__wd { font-size: 16px; line-height: 1.2; }
+.diet-day__num { font-size: 22px; font-weight: 600; line-height: 1.2; }
+.diet-mark { font-size: 16px; line-height: 1; color: var(--success-600); }
+.diet-day.is-selected .diet-mark { color: #fff; }
+
+.diet-datebar { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+.diet-datebar__mid { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; min-width: 0; }
+.diet-datebar__label { font-size: 16px; }
+
+/* ---------- 總覽 ---------- */
+.diet-kcal { display: flex; gap: 16px; margin-bottom: 8px; }
+.diet-kcal__item { flex: 1; display: flex; flex-direction: column; }
+.diet-kcal__k { font-size: 16px; color: var(--ink-2); }
+.diet-kcal__v { font-size: 28px; font-weight: 600; line-height: 1.2; }
+.diet-remaining { margin: 0 0 4px; font-size: 18px; font-weight: 600; color: var(--success-600); }
+.diet-remaining strong { font-size: 32px; }
+.diet-remaining.is-over { color: var(--danger-600); }
+.diet-burnline { margin: 0 0 12px; font-size: 16px; color: var(--ink-2); }
+.diet-guide { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
+.diet-plainmacros { list-style: none; margin: 0 0 8px; padding: 0; display: flex; gap: 16px; flex-wrap: wrap; font-size: 16px; }
+
+/* ---------- 動作列 ---------- */
+.diet-actions { display: flex; gap: 8px; margin: 0 0 8px; }
+.diet-actions > * { flex: 1; }
+
+/* ---------- 餐點清單 ---------- */
+.diet-meals { list-style: none; margin: 0; padding: 0; }
+.diet-meal { padding: 8px 0; border-bottom: 1px solid var(--line); }
+.diet-meal:last-child { border-bottom: 0; }
+.diet-meal__info { display: flex; flex-direction: column; gap: 2px; }
+.diet-meal__name { font-size: 18px; font-weight: 600; overflow-wrap: anywhere; }
+.diet-meal__kcal { font-size: 16px; font-weight: 600; color: var(--primary-600); }
+.diet-meal__macros { font-size: 16px; color: var(--ink-2); }
+.diet-meal__tools { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 4px; }
+
+/* ---------- 記錄面板 ---------- */
+.diet-menu { display: flex; flex-direction: column; gap: 8px; }
+.diet-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 18px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.diet-menu__item:active { background: #e6edf3; }
+
+.diet-form__error { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: #fdecea; color: var(--danger-600); font-size: 16px; font-weight: 600; }
+.diet-form__converted { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; background: #eef6fb; font-size: 16px; }
+.diet-form__manual { display: flex; align-items: center; justify-content: space-between; margin: -4px 0 12px; }
+.diet-form__manual-tag { padding: 4px 10px; border-radius: 999px; background: var(--warning); color: var(--on-warning); font-size: 16px; font-weight: 600; }
+
+.diet-stepper { display: flex; align-items: center; gap: 8px; }
+.diet-stepper__value { min-width: 72px; text-align: center; font-size: 22px; font-weight: 600; }
+
+.diet-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  min-height: 48px;
+  margin: 0 0 12px;
+  padding: 0 12px;
+  border: 2px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.diet-switch__state { min-width: 44px; padding: 4px 10px; border-radius: 999px; background: #e3e8ed; text-align: center; }
+.diet-switch.is-on { border-color: var(--success-600); }
+.diet-switch.is-on .diet-switch__state { background: var(--success-600); color: #fff; }
+
+.diet-burn__auto { margin: 0 0 4px; font-size: 18px; }
+.diet-burn__auto strong { font-size: 28px; }
+.diet-burn__note { margin: 0 0 12px; font-size: 16px; color: var(--ink-2); }
+
+/* ---------- 最愛 ---------- */
+.diet-favs__bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font-size: 16px; color: var(--ink-2); }
+.diet-favs { list-style: none; margin: 0; padding: 0; }
+.diet-fav { display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--line); }
+.diet-fav__main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-height: 56px;
+  padding: 8px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.diet-fav__main:active { background: #e6edf3; }
+.diet-fav__name { font-size: 18px; font-weight: 600; }
+.diet-fav__meta { font-size: 16px; color: var(--ink-2); }
+
+/* ---------- 日曆 ---------- */
+.diet-cal__nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.diet-cal__title { font-size: 18px; font-weight: 600; }
+.diet-cal__grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.diet-cal__head { text-align: center; font-size: 16px; color: var(--ink-2); }
+.diet-cal__empty { min-height: 44px; }
+.diet-cal__day {
+  min-height: 48px;
+  min-width: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: #eef1f4;
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+  cursor: pointer;
+}
+.diet-cal__day:active { background: #dde3e9; }
+.diet-cal__day.is-today { border-color: var(--primary-600); }
+.diet-cal__day.is-selected { background: var(--primary-600); color: #fff; }
+.diet-cal__day.is-selected .diet-mark { color: #fff; }
+.diet-cal__legend { margin: 12px 0 0; font-size: 16px; color: var(--ink-2); }
+
+/* ---------- 復原／提示列 ---------- */
+.diet-snack {
+  position: fixed;
+  left: 16px;
+  right: 16px;
+  bottom: calc(56px + env(safe-area-inset-bottom) + 12px);
+  z-index: var(--z-toast);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 16px;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: #fff;
+  font-size: 16px;
+  box-shadow: 0 4px 12px rgba(44, 62, 80, 0.3);
+}
+.diet-snack__text { flex: 1; overflow-wrap: anywhere; }
+.diet-snack__btn,
+.diet-snack__close {
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: underline;
+  cursor: pointer;
+}
+.diet-snack__close { padding: 0; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .diet *, .diet-snack, .diet-snack * { transition: none !important; animation: none !important; }
+}

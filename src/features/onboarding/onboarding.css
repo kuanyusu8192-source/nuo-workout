@@ -1,0 +1,50 @@
+/* 首次問卷樣式。只用 theme.css 變數；所有可點元素 >= 44px，字級 >= 16px（輔助說明 14px 僅限次要文字）。 */
+.onb { display: flex; flex-direction: column; gap: 16px; }
+
+.onb-progress { display: flex; align-items: center; gap: 12px; margin: 0; }
+.onb-progress__count { font-size: 32px; font-weight: 700; line-height: 1; color: var(--primary-600); }
+.onb-progress__title { font-size: 18px; font-weight: 700; }
+.onb-dots { display: flex; gap: 6px; margin-left: auto; }
+.onb-dot { width: 24px; height: 8px; border-radius: 4px; background: var(--line); }
+.onb-dot.is-done { background: var(--primary-600); }
+
+.onb-lead { margin: 0; color: var(--ink-2); }
+.onb-group-label { margin: 0 0 4px; font-weight: 600; }
+
+.onb-choice { display: flex; gap: var(--gap); }
+.onb-choice--cards { flex-direction: column; }
+.onb-choice__item {
+  display: flex;
+  min-height: 48px;
+  min-width: 44px;
+  padding: 10px 16px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 150ms, border-color 150ms;
+}
+.onb-choice--compact .onb-choice__item { flex: 1; align-items: center; justify-content: center; font-weight: 600; }
+.onb-choice--cards .onb-choice__item { flex-direction: column; gap: 2px; min-height: 64px; justify-content: center; }
+.onb-choice__label { font-weight: 700; }
+.onb-choice__desc { font-size: 14px; color: var(--ink-2); }
+.onb-choice__item:active { background: #e6edf3; }
+.onb-choice__item.is-checked { border-color: var(--primary-600); background: #e8f1f8; box-shadow: inset 4px 0 0 var(--primary-600); }
+.onb-choice--compact .onb-choice__item.is-checked { box-shadow: none; }
+
+.onb-preview { margin: 0; padding: 16px; border-radius: var(--radius); background: var(--card); box-shadow: 0 1px 3px rgba(44, 62, 80, 0.12); }
+.onb-preview__kcal { margin: 0; font-size: 18px; font-weight: 700; }
+.onb-preview__kcal .num { font-size: 40px; color: var(--primary-600); }
+.onb-preview__note { margin: 4px 0 12px; color: var(--ink-2); font-size: 14px; }
+.onb-preview__macros { display: flex; gap: var(--gap); margin: 0; padding: 0; list-style: none; }
+.onb-preview__macros li { flex: 1; padding: 8px; border-radius: 10px; background: var(--bg); text-align: center; }
+.onb-preview__macros .num { display: block; font-size: 28px; font-weight: 700; }
+
+.onb-error { margin: 0; color: var(--danger-600); font-weight: 600; }
+.onb-hint { margin: 0; color: var(--ink-2); font-size: 14px; }
+
+.onb-actions { display: flex; gap: var(--gap); margin-top: 8px; }
+.onb-actions > * { flex: 1; }

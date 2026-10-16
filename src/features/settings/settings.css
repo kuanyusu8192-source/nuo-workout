@@ -1,0 +1,37 @@
+/* 設定畫面樣式。只用 theme.css 變數；可點元素 >= 44px；字級 >= 16px（次要說明 14px）。 */
+.set { display: flex; flex-direction: column; }
+.set .nuo-card { padding-bottom: 8px; }
+
+.set-field { margin-bottom: 12px; }
+.set-label { margin: 0 0 4px; font-weight: 600; }
+.set-subtitle { margin: 16px 0 8px; font-size: 16px; font-weight: 700; }
+.set-note { margin: 4px 0 12px; font-size: 14px; color: var(--ink-2); }
+.set-ok { margin: 8px 0; font-weight: 600; color: var(--success-600); }
+.set-error { margin: 8px 0; font-weight: 600; color: var(--danger-600); }
+.set-about { margin: 0; font-size: 20px; font-weight: 700; }
+
+.set-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; }
+.set-stepper { display: flex; align-items: center; gap: var(--gap); }
+.set-stepper__value { min-width: 72px; text-align: center; font-size: 24px; font-weight: 700; }
+
+.set-switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; margin: 4px 0; cursor: pointer; }
+.set-switch input { width: 28px; height: 28px; margin: 0; flex: none; accent-color: var(--primary-600); cursor: pointer; }
+
+.set-kcal { display: block; margin: 4px 0 12px; padding: 12px; border-radius: 10px; background: var(--bg); font-weight: 600; }
+.set-kcal .num { font-size: 32px; font-weight: 700; color: var(--primary-600); }
+.set-kcal .set-note { display: block; margin: 0; font-weight: 400; }
+
+.set-actions { display: flex; flex-wrap: wrap; gap: var(--gap); margin: 8px 0 12px; }
+.set-actions > * { flex: 1 1 140px; }
+
+.set-undo { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); margin: 8px 0; padding: 4px 4px 4px 16px; border-radius: var(--radius); background: var(--ink); color: #fff; }
+.set-undo .nuo-btn--ghost { color: #fff; border-color: #fff; }
+
+.set-history { margin: 0 0 8px; padding: 0; list-style: none; }
+.set-history__item { display: flex; align-items: center; gap: 12px; min-height: 48px; border-bottom: 1px solid var(--line); }
+.set-history__date { flex: 1; }
+.set-history__val { font-size: 22px; font-weight: 600; }
+.set-history__fat { min-width: 80px; color: var(--ink-2); font-size: 14px; }
+
+.set-counts { margin: 0; padding-left: 20px; }
+.set-counts .num { font-size: 20px; font-weight: 600; }
