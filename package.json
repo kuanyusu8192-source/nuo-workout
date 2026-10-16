@@ -11,13 +11,20 @@
     "typecheck": "tsc --noEmit",
     "check:contrast": "node scripts/check-contrast.mjs",
     "copy:gifs": "node scripts/copy-gifs.mjs --from C:/Users/FARRAH/Documents/volumex-extract/gifs",
-    "build:exercises": "node scripts/build-exercises.mjs --from C:/Users/FARRAH/Documents/volumex-extract/final_merged_exercises.json --out src/assets/exercises.json"
+    "build:exercises": "node scripts/build-exercises.mjs --from C:/Users/FARRAH/Documents/volumex-extract/final_merged_exercises.json --out src/assets/exercises.json",
+    "prepare:assets": "node scripts/prepare-assets.mjs",
+    "cap:sync": "npm run build && npm run prepare:assets && npx cap sync android",
+    "android:debug": "node scripts/android-debug.mjs"
   },
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
     "dexie": "^4.4.6",
     "preact": "^11.0.1"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@preact/preset-vite": "^2.10.6",
     "@testing-library/preact": "^3.2.4",
     "fake-indexeddb": "^6.2.5",

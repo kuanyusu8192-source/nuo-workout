@@ -5,3 +5,5 @@ android/app/build
 android/.gradle
 *.local
 volumex-extract/
+android/build
+*.apk

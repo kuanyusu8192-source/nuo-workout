@@ -6,6 +6,9 @@ import { App } from './app/App';
 import { bootstrap } from './app/bootstrap';
 import { ReposProvider } from './app/context';
 import { Skeleton } from './components/Skeleton';
+import { setupNative } from './app/native';
+
+setupNative();
 
 const root = document.getElementById('app')!;
 render(<Skeleton height={48} lines={4} label="資料庫載入中" />, root);
