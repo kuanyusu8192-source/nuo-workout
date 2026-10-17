@@ -17,6 +17,11 @@ describe('today.css 規則', () => {
     expect(rule('.today-undo__btn')).toMatch(/min-height:\s*(4[4-9]|[5-9]\d)px/);
     expect(rule('.today-undo__btn')).toMatch(/min-width:\s*(4[4-9]|[5-9]\d)px/);
   });
+  it('資訊卡的日期列在窄螢幕可換行，按鈕文字不被切成兩行（手機實測：「回到今 / 天」）', () => {
+    expect(rule('.today-head__row')).toMatch(/flex-wrap:\s*wrap/);
+    expect(rule('.today-head__row .nuo-btn')).toMatch(/white-space:\s*nowrap/);
+    expect(rule('.today-head__row .nuo-btn')).toMatch(/flex:\s*0 0 auto/);
+  });
   it('不移除焦點外框', () => {
     expect(css).not.toMatch(/outline:\s*(none|0)\b/);
   });

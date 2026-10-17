@@ -10,8 +10,10 @@
   background: var(--card);
   box-shadow: 0 1px 3px rgba(44, 62, 80, 0.12);
 }
-.today-head__row { display: flex; align-items: center; justify-content: space-between; gap: var(--gap); }
-.today-head__date { margin: 0; font-size: 20px; line-height: 1.3; }
+/* 窄螢幕（375px）：日期太長時按鈕換到下一行，而不是把按鈕文字切成兩行 */
+.today-head__row { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--gap); }
+.today-head__row .nuo-btn { flex: 0 0 auto; white-space: nowrap; }
+.today-head__date { margin: 0; font-size: 20px; line-height: 1.3; flex: 1 1 auto; min-width: 0; }
 .today-head__plan { margin: 4px 0 0; color: var(--ink-2); }
 .today-head__pick { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; font-weight: 600; }
 
