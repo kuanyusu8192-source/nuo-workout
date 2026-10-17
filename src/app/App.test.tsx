@@ -56,24 +56,49 @@ describe('App 外殼', () => {
     await waitFor(() => expect(window.location.hash).toBe('#/today'));
   });
 
-  it('標頭顯示模式文字標籤，背景隨模式切換', async () => {
-    let setMode!: (m: 'gear' | 'travel' | 'backfill') => void;
+  it('標頭沒有器材／出差模式徽章，背景固定 --ink；今天不顯示補記標籤', async () => {
+    const { container } = renderShell(await createProfiledRepos());
+    await goTo('#/today');
+    const header = container.querySelector('header') as HTMLElement;
+    expect(header.textContent).not.toContain('器材模式');
+    expect(screen.queryByTestId('mode-label')).toBeNull();
+    expect(header.style.background).toContain('var(--ink)');
+  });
+
+  it('selectedDate 不是今天時顯示「補記」標籤與補記色；回到今天就消失', async () => {
+    let setDate!: (d: string) => void;
     function Spy() {
-      setMode = useAppState().setMode;
+      const s = useAppState();
+      setDate = s.setSelectedDate as (d: string) => void;
       return null;
     }
     const { container } = renderShell(await createProfiledRepos(), <Spy />);
     await goTo('#/today');
     const header = container.querySelector('header') as HTMLElement;
-    expect(screen.getByTestId('mode-label').textContent).toBe('器材模式');
+    await act(async () => setDate('2000-01-01'));
+    expect(screen.getByTestId('mode-label').textContent).toBe('補記');
+    expect(header.style.background).toContain(MODE_COLOR_VAR.backfill);
+    await act(async () => setDate(new Date().toLocaleDateString('sv')));
+    expect(screen.queryByTestId('mode-label')).toBeNull();
     expect(header.style.background).toContain('var(--ink)');
-    expect(header.dataset.mode).toBe('gear');
-    for (const [mode, label] of [['travel', '出差模式'], ['backfill', '補記模式'], ['gear', '器材模式']] as const) {
-      await act(async () => setMode(mode));
-      expect(screen.getByTestId('mode-label').textContent).toBe(label);
-      expect(header.dataset.mode).toBe(mode);
-      expect(header.style.background).toContain(MODE_COLOR_VAR[mode]);
-    }
+  });
+
+  it('頁面內容包在轉場容器：分頁淡入、子頁滑入', async () => {
+    const { container } = renderApp(await createProfiledRepos());
+    await goTo('#/history');
+    expect(container.querySelector('.route-view')?.classList.contains('route-view--fade')).toBe(true);
+    await goTo('#/exercise/abc');
+    expect(container.querySelector('.route-view')?.classList.contains('route-view--slide')).toBe(true);
+  });
+
+  it('切換分頁時標頭與底部分頁列是同一個 DOM 節點（不重繪）', async () => {
+    const { container } = renderApp(await createProfiledRepos());
+    await goTo('#/today');
+    const header = container.querySelector('header');
+    const nav = container.querySelector('nav');
+    await goTo('#/history');
+    expect(container.querySelector('header')).toBe(header);
+    expect(container.querySelector('nav')).toBe(nav);
   });
 
   it('子頁（動作詳情）：無底部分頁、只有一個返回鈕、標頭標題', async () => {
@@ -175,6 +200,29 @@ describe('首次啟動', () => {
     await tick();
     expect(screen.queryByRole('navigation', { name: '主要分頁' })).toBeNull();
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('建立個人資料');
+  });
+
+  it('問卷畫面沒有標頭返回按鈕；第 1 步按返回鍵＝離開 App，不會跳到今日', async () => {
+    window.location.hash = '#/today';
+    const onExit = vi.fn();
+    renderApp(createMemoryRepos(), { onExit });
+    await waitFor(() => expect(window.location.hash).toBe('#/onboarding'));
+    await screen.findByRole('heading', { level: 1, name: '建立個人資料' }, { timeout: 10_000 });
+    expect(screen.queryByRole('button', { name: '返回' })).toBeNull();
+    const back = vi.spyOn(window.history, 'back').mockImplementation(() => {});
+    // 首次啟動時外殼是在非同步導向之後才掛載，「安裝返回處理」的 effect 要等下一個繪製週期才跑
+    // （真實使用不受影響：沒人能在畫面出現的十幾毫秒內按返回）。處理器還沒掛上時送返回事件是「無作用」的，
+    // 所以輪詢送事件是安全的：掛上後第一次送出就會呼叫 exit，不會重複。
+    await waitFor(
+      () => {
+        act(() => dispatchBackEvent());
+        expect(onExit).toHaveBeenCalledTimes(1);
+      },
+      { timeout: 10_000 },
+    );
+    expect(back).not.toHaveBeenCalled();
+    expect(window.location.hash).toBe('#/onboarding');
+    back.mockRestore();
   });
 
   it('已有 profile：不導向問卷', async () => {

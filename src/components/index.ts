@@ -11,5 +11,6 @@ export { Field, NumberField, FieldFrame, rangeMessage, type FieldProps, type Num
 export { EmptyState, type EmptyStateProps } from './EmptyState';
 export { ToastProvider, useToast, type ToastApi, type ToastKind } from './Toast';
 export { Skeleton, type SkeletonProps } from './Skeleton';
+export { Delayed, SKELETON_DELAY_MS, useDelayedFlag } from './useDelayed';
 export { ProgressBar, type ProgressBarProps } from './ProgressBar';
 export * from './charts';

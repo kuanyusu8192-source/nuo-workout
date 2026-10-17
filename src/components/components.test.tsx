@@ -278,7 +278,7 @@ describe('Toast', () => {
 
 describe('Skeleton', () => {
   it('role=status、可指定高度與列數以預留版面', () => {
-    const { container } = render(<Skeleton height={48} lines={3} label="載入歷史" />);
+    const { container } = render(<Skeleton height={48} lines={3} label="載入歷史" delay={0} />);
     expect(screen.getByRole('status', { name: '載入歷史' })).toBeTruthy();
     const bars = container.querySelectorAll('.nuo-skeleton');
     expect(bars.length).toBe(3);

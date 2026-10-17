@@ -51,19 +51,28 @@ export interface AppStateProviderProps {
   initialMode?: AppMode;
 }
 
-export function AppStateProvider({ children, today: todayProp, initialMode = 'gear' }: AppStateProviderProps) {
+export function AppStateProvider({ children, today: todayProp, initialMode = 'normal' }: AppStateProviderProps) {
   const repos = useRepos();
   const today = useMemo(() => todayProp ?? toDateStr(new Date()), [todayProp]);
   const [mode, setModeState] = useState<AppMode>(initialMode);
   const [activePlanId, setActivePlanIdState] = useState<string | null>(null);
-  const [selectedDate, setSelectedDate] = useState<DateStr>(today);
+  const [selectedDate, setSelectedDateState] = useState<DateStr>(today);
   const [dataVersion, setDataVersion] = useState(0);
+
+  // 選到不是今天的日期＝進入補記；選回今天＝離開補記
+  const setSelectedDate = useCallback(
+    (d: DateStr) => {
+      setSelectedDateState(d);
+      setModeState(d === today ? 'normal' : 'backfill');
+    },
+    [today],
+  );
 
   const setMode = useCallback(
     (m: AppMode) => {
       setModeState(m);
       // 離開補記模式就回到今天，避免誤把今天的訓練記到過去
-      if (m !== 'backfill') setSelectedDate(today);
+      if (m !== 'backfill') setSelectedDateState(today);
     },
     [today],
   );
@@ -88,7 +97,7 @@ export function AppStateProvider({ children, today: todayProp, initialMode = 'ge
 
   const value = useMemo<AppState>(
     () => ({ mode, setMode, activePlanId, setActivePlanId, selectedDate, setSelectedDate, today, dataVersion, invalidate }),
-    [mode, setMode, activePlanId, setActivePlanId, selectedDate, today, dataVersion, invalidate],
+    [mode, setMode, activePlanId, setActivePlanId, selectedDate, setSelectedDate, today, dataVersion, invalidate],
   );
   return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
 }

@@ -11,7 +11,7 @@ import { createRepos, resolveDbKind, type DbKind } from './createRepos';
  * 把這個數字加 1：已安裝的 App 下次啟動會重新 bulkPut 一次（只依 id 覆蓋內建動作，不動自訂動作與最愛）。
  * 版本沒變就不會重灌。
  */
-export const EXERCISE_SEED_VERSION = 1;
+export const EXERCISE_SEED_VERSION = 2; // v2：NUO 與 VolumeX 同名動作去重，舊 id 依 exercise-aliases.json 遷移
 
 export interface Booted {
   repos: Repos;

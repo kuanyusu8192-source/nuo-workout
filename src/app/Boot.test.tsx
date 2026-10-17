@@ -2,6 +2,7 @@ import { act, fireEvent, screen, waitFor, render } from '@testing-library/preact
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { BackupService } from '../features/settings/backupService';
 import { createProfiledRepos } from '../test/helpers';
+import { dispatchBackEvent } from './back';
 import { Boot } from './Boot';
 import { bootstrap, EXERCISE_SEED_VERSION, type Booted } from './bootstrap';
 
@@ -19,6 +20,8 @@ describe('Boot 啟動外殼', () => {
     let finish!: (b: Booted) => void;
     render(<Boot boot={() => new Promise<Booted>((r) => (finish = r))} />);
     await wait(); // useAsync 於下一個微任務才呼叫 boot
+    expect(screen.queryByRole('status', { name: '資料庫載入中' })).toBeNull(); // 骨架延遲 150ms 才顯示
+    await wait(200);
     expect(screen.getByRole('status', { name: '資料庫載入中' })).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: '主要分頁' })).toBeNull();
     await act(async () => finish({ repos: await createProfiledRepos(), kind: 'memory' }));
@@ -84,5 +87,14 @@ describe('bootstrap', () => {
 
   it('測試環境預設記憶體版', async () => {
     expect((await bootstrap('')).kind).toBe('memory');
+  });
+
+  it('onExit 會傳給 App：根畫面按返回鍵呼叫它', async () => {
+    const onExit = vi.fn();
+    const repos = await createProfiledRepos();
+    render(<Boot boot={async () => ({ repos, kind: 'memory' })} onExit={onExit} />);
+    await screen.findByRole('navigation', { name: '主要分頁' });
+    act(() => dispatchBackEvent());
+    expect(onExit).toHaveBeenCalledTimes(1);
   });
 });

@@ -17,6 +17,7 @@
   min-height: 56px;
   padding: env(safe-area-inset-top) 8px 0 8px;
   color: #fff;
+  background: var(--ink);
   transition: background-color 200ms;
 }
 .app-header__spacer { width: 8px; }
@@ -31,7 +32,15 @@
   white-space: nowrap;
 }
 
-.app-main { flex: 1; padding: 16px; }
+.app-main { flex: 1; padding: 16px; overflow-x: hidden; }
+
+/* ---- 頁面切換：只動 opacity／transform（不觸發版面重排）；分頁淡入、子頁滑入；reduced-motion 關閉 ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .route-view--fade { animation: nuo-route-fade 180ms ease-out; }
+  .route-view--slide { animation: nuo-route-slide 220ms ease-out; }
+}
+@keyframes nuo-route-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nuo-route-slide { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
 /* 底部分頁 56px + 安全區 + 一點呼吸空間，內容不被遮住 */
 .app-main.has-nav { padding-bottom: calc(56px + env(safe-area-inset-bottom) + 16px); }
 

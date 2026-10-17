@@ -74,3 +74,15 @@ describe('動態', () => {
     expect(theme).toMatch(/prefers-reduced-motion: reduce/);
   });
 });
+
+describe('頁面切換動畫（app.css）', () => {
+  it('淡入／滑入只用 opacity／transform，且僅在 no-preference 動畫下啟用', () => {
+    expect(appCss).toMatch(/@keyframes nuo-route-fade/);
+    expect(appCss).toMatch(/@keyframes nuo-route-slide/);
+    const block = appCss.match(/@media \(prefers-reduced-motion: no-preference\) \{[\s\S]*?\n\}/)?.[0] ?? '';
+    expect(block).toContain('.route-view--fade');
+    expect(block).toContain('.route-view--slide');
+    const frames = appCss.match(/@keyframes nuo-route-(?:fade|slide)[^\n]*/g)?.join('') ?? '';
+    expect(frames).not.toMatch(/(width|height|margin|top|left)\s*:/);
+  });
+});

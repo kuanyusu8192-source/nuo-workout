@@ -64,8 +64,9 @@ describe('返回鍵堆疊', () => {
     const close = vi.fn();
     const r = render(<Layer onBack={close} />);
     await tick();
-    window.history.back();
-    // jsdom 的 history 遍歷是非同步的，高負載時可能超過固定等待，所以等條件成立
+    // 直接送出 popstate（瀏覽器返回時實際會發生的事件）：jsdom 的 history.back() 是非同步遍歷，
+    // 高負載時偶爾超過等待而造成偶發失敗；這個測試要驗證的是「收到 popstate 就關閉最上層」。
+    act(() => { window.dispatchEvent(new PopStateEvent('popstate', { state: null })); });
     await waitFor(() => expect(close).toHaveBeenCalledTimes(1), { timeout: 5000 });
     await unmount(r);
     await tick();

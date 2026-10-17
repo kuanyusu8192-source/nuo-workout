@@ -37,20 +37,22 @@ describe('AppState', () => {
         <p data-testid="plan">{s.activePlanId ?? 'none'}</p>
         <button onClick={() => s.setMode('backfill')}>backfill</button>
         <button onClick={() => s.setSelectedDate('2026-01-01')}>pick</button>
-        <button onClick={() => s.setMode('gear')}>gear</button>
+        <button onClick={() => s.setMode('normal')}>normal</button>
       </div>
     );
   }
-  it('預設器材模式、日期為今天；離開補記模式會回到今天', async () => {
+  it('預設一般模式、日期為今天；離開補記模式會回到今天；選非今天日期自動進入補記', async () => {
     renderWithApp(<Probe />, createMemoryRepos(), { today: '2026-10-16' });
-    expect(screen.getByTestId('mode').textContent).toBe('gear');
+    expect(screen.getByTestId('mode').textContent).toBe('normal');
     expect(screen.getByTestId('date').textContent).toBe('2026-10-16');
     await act(async () => { screen.getByText('backfill').click(); });
     await act(async () => { screen.getByText('pick').click(); });
     expect(screen.getByTestId('mode').textContent).toBe('backfill');
     expect(screen.getByTestId('date').textContent).toBe('2026-01-01');
-    await act(async () => { screen.getByText('gear').click(); });
+    await act(async () => { screen.getByText('normal').click(); });
     expect(screen.getByTestId('date').textContent).toBe('2026-10-16');
+    await act(async () => { screen.getByText('pick').click(); });
+    expect(screen.getByTestId('mode').textContent).toBe('backfill');
   });
   it('讀取 repos 中啟用的週計畫', async () => {
     const repos = createMemoryRepos();

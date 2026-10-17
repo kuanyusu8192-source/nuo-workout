@@ -3,8 +3,8 @@ import './theme.css';
 import './components/ui.css';
 import './app/app.css';
 import { Boot } from './app/Boot';
-import { setupNative } from './app/native';
+import { exitApp, setupNative } from './app/native';
 
 setupNative();
 
-render(<Boot />, document.getElementById('app')!);
+render(<Boot onExit={exitApp} />, document.getElementById('app')!);

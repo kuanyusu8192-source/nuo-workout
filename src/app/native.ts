@@ -7,3 +7,9 @@ export function setupNative(): void {
   if (!Capacitor.isNativePlatform()) return;
   void App.addListener('backButton', () => dispatchBackEvent());
 }
+
+/** 離開 App：原生環境呼叫 App.exitApp()；網頁環境沒有「離開」概念，維持 no-op（不 window.close，避免關掉使用者的分頁） */
+export function exitApp(): void {
+  if (!Capacitor.isNativePlatform()) return;
+  void App.exitApp();
+}
