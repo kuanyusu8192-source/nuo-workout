@@ -65,10 +65,10 @@ describe.each([
 describe('內建動作庫（真實 exercises.json）', () => {
   it('筆數、搜尋、分類', async () => {
     const all = await loadBundledExercises();
-    expect(all).toHaveLength(1368);
+    expect(all).toHaveLength(1362);
     const r = createDexieRepos(new NuoDB(`seed-real-${Date.now()}`));
-    expect(await seedExercises(r, all, 1)).toEqual({ seeded: true, count: 1368 });
-    expect((await r.exercises.list()).length).toBe(1368);
+    expect(await seedExercises(r, all, 1)).toEqual({ seeded: true, count: 1362 });
+    expect((await r.exercises.list()).length).toBe(1362);
     expect((await r.exercises.list({ query: '臥推' })).length).toBeGreaterThanOrEqual(1);
     expect((await r.exercises.list({ query: 'bench press' })).length).toBeGreaterThanOrEqual(1);
     expect((await r.exercises.list({ equipment: '槓鈴' })).length).toBeGreaterThan(0);

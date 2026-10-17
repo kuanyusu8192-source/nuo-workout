@@ -27,7 +27,10 @@ export interface ExerciseFilter {
   favoriteOnly?: boolean;
 }
 
-export type SessionMode = 'gear' | 'travel' | 'backfill';
+/** 'gear'／'travel' 是舊資料（器材／出差模式已移除），讀取時用 normalizeSessionMode 視為 'normal' */
+export type SessionMode = 'normal' | 'gear' | 'travel' | 'backfill';
+
+export const normalizeSessionMode = (m: SessionMode): 'normal' | 'backfill' => (m === 'backfill' ? 'backfill' : 'normal');
 
 export interface Session {
   id: string;
@@ -144,7 +147,7 @@ export const DEFAULT_SETTINGS: Settings = {
   id: 1,
   weightUnit: 'kg',
   loadUnit: 'kg',
-  restDefaultSec: 90,
+  restDefaultSec: 60,
   countBurnToBudget: true,
   healthConnect: false,
   metStrength: 5,

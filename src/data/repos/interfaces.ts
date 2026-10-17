@@ -11,6 +11,20 @@ export interface ExerciseRepo {
   /** 回傳切換後是否為最愛 */
   toggleFavorite(exerciseId: string): Promise<boolean>;
   addCustom(input: Omit<Exercise, 'id' | 'source'>): Promise<Exercise>;
+  /**
+   * 灌入內建動作庫並做別名遷移（單一交易，失敗全部還原）：
+   * 1) 依 aliases { 舊id: 新id }（新 id 須在 items 內、舊 id 不在 items 內）改寫 sets.exerciseId、
+   *    favoriteExercises、templates.exercises[].exerciseId；
+   * 2) 刪除不在 items 的內建（volumex／nuo）動作列——但仍被 sets／最愛／課表引用者保留（不產生孤兒）；絕不刪 custom；
+   * 3) bulkPut items。
+   */
+  applySeed(items: Exercise[], aliases: Record<string, string>): Promise<void>;
+}
+
+/** 過濾出有效的別名：新 id 在新清單、舊 id 不在新清單 */
+export function effectiveAliases(items: Exercise[], aliases: Record<string, string>): Map<string, string> {
+  const ids = new Set(items.map((e) => e.id));
+  return new Map(Object.entries(aliases).filter(([o, n]) => o !== n && ids.has(n) && !ids.has(o)));
 }
 
 export interface NewSession {

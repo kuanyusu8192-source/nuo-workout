@@ -20,3 +20,10 @@ export function convertVolumex(raw: Record<string, any>): BuiltExercise;
 export function convertNuo(raw: Record<string, any>): BuiltExercise;
 export function assertUniqueIds(list: { id: string }[]): void;
 export function buildAll(volumex: Record<string, any>[], nuo: Record<string, any>[]): BuiltExercise[];
+export function normalizeName(name: string): string;
+export function findAliases(volumex: BuiltExercise[], nuo: BuiltExercise[]): Record<string, string>;
+export function buildAllWithAliases(
+  volumex: Record<string, any>[],
+  nuo: Record<string, any>[],
+): { exercises: BuiltExercise[]; aliases: Record<string, string> };
+export function checkExercises(list: Record<string, any>[], gifFiles?: Set<string>): string[];

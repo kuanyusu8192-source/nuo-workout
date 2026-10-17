@@ -1,7 +1,7 @@
 /** 記憶體版 repository：供 P3 畫面假資料與測試使用。行為須與 Dexie 版一致。 */
 import { newId } from '../db';
 import { DEFAULT_SETTINGS, type BodyMetric, type Exercise, type FavoriteMeal, type Meal, type PlanRow, type ProfileRow, type Session, type SetRow, type Settings, type Template } from '../types';
-import { applyPatch, byCreatedAt, byTemplateOrder, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
+import { applyPatch, byCreatedAt, byTemplateOrder, effectiveAliases, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
 
 const clone = <T>(v: T): T => structuredClone(v);
 const missing = (what: string, id: string) => new Error(`${what} 不存在：${id}`);
@@ -26,6 +26,44 @@ export function createMemoryRepos(): Repos {
     exercises: {
       async bulkPut(items) {
         for (const e of items) exercises.set(e.id, clone(e));
+      },
+      async applySeed(items, aliases) {
+        const map = effectiveAliases(items, aliases);
+        const newIds = new Set(items.map((e) => e.id));
+        const snap = { ex: clone(exercises), fav: clone(favExercises), sets: clone(sets), tpl: clone(templates) };
+        try {
+          for (const row of sets.values()) {
+            const n = map.get(row.exerciseId);
+            if (n) row.exerciseId = n;
+          }
+          for (const [oldId, newId] of map) {
+            if (favExercises.delete(oldId)) favExercises.add(newId);
+          }
+          for (const t of templates.values()) {
+            for (const te of t.exercises) {
+              const n = map.get(te.exerciseId);
+              if (n) te.exerciseId = n;
+            }
+          }
+          const referenced = new Set<string>([
+            ...[...sets.values()].map((s) => s.exerciseId),
+            ...favExercises,
+            ...[...templates.values()].flatMap((t) => t.exercises.map((te) => te.exerciseId)),
+          ]);
+          for (const [id, e] of [...exercises]) {
+            if (e.source !== 'custom' && !newIds.has(id) && !referenced.has(id)) exercises.delete(id);
+          }
+          for (const e of items) {
+            if (!e.id) throw new Error('動作缺少 id');
+            exercises.set(e.id, clone(e));
+          }
+        } catch (err) {
+          exercises.clear(); for (const [k, v] of snap.ex) exercises.set(k, v);
+          favExercises.clear(); for (const v of snap.fav) favExercises.add(v);
+          sets.clear(); for (const [k, v] of snap.sets) sets.set(k, v);
+          templates.clear(); for (const [k, v] of snap.tpl) templates.set(k, v);
+          throw err;
+        }
       },
       async get(id) {
         const e = exercises.get(id);

@@ -93,6 +93,19 @@ describe('importBackup', () => {
     expect((await r2.plans.list()).every((p) => !p.isTravel)).toBe(true);
   });
 
+  it('session.mode 接受 normal／gear／travel／backfill（舊備份帶 gear／travel 能匯入）', async () => {
+    const db2 = new NuoDB(`backup-${Date.now()}-${seq++}`);
+    for (const mode of ['normal', 'gear', 'travel', 'backfill']) {
+      const f = JSON.parse(JSON.stringify(await exportBackup(db)));
+      f.data.sessions[0].mode = mode;
+      await expect(importBackup(db2, f, 'replace')).resolves.toBeTruthy();
+      expect((await db2.sessions.toArray())[0].mode).toBe(mode); // 不改寫歷史資料
+    }
+    const f = JSON.parse(JSON.stringify(await exportBackup(db)));
+    f.data.sessions[0].mode = 'bogus';
+    await expect(importBackup(db2, f, 'replace')).rejects.toThrow(/mode/);
+  });
+
   it('replace 會清掉現有的非備份資料', async () => {
     const f = await exportBackup(db);
     await r.meals.add({ date: '2026-10-02', name: '多的', servings: 1, proteinG: 0, carbG: 0, fatG: 0, kcal: 1 });

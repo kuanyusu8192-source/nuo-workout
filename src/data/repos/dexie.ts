@@ -2,7 +2,7 @@
 import type { EntityTable } from 'dexie';
 import { newId, type NuoDB } from '../db';
 import { DEFAULT_SETTINGS, type Exercise, type FavoriteMeal, type Meal, type PlanRow, type Session, type SetRow, type Template } from '../types';
-import { applyPatch, byCreatedAt, byTemplateOrder, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
+import { applyPatch, byCreatedAt, byTemplateOrder, effectiveAliases, inRange, matchExercise, toSetRecord, type Repos } from './interfaces';
 
 const missing = (what: string, id: string) => new Error(`${what} 不存在：${id}`);
 
@@ -27,6 +27,35 @@ export function createDexieRepos(db: NuoDB): Repos {
         await db.exercises.bulkPut(items);
       },
       get: (id) => db.exercises.get(id),
+      async applySeed(items, aliases) {
+        const map = effectiveAliases(items, aliases);
+        const newIds = new Set(items.map((e) => e.id));
+        await db.transaction('rw', [db.exercises, db.sets, db.favoriteExercises, db.templates], async () => {
+          for (const [oldId, newId] of map) {
+            await db.sets.where('exerciseId').equals(oldId).modify({ exerciseId: newId });
+            if (await db.favoriteExercises.get(oldId)) {
+              await db.favoriteExercises.delete(oldId);
+              await db.favoriteExercises.put({ exerciseId: newId });
+            }
+          }
+          if (map.size) {
+            await db.templates.toCollection().modify((t) => {
+              for (const te of t.exercises) {
+                const n = map.get(te.exerciseId);
+                if (n) te.exerciseId = n;
+              }
+            });
+          }
+          const referenced = new Set<string>((await db.sets.orderBy('exerciseId').uniqueKeys()) as string[]);
+          for (const f of await db.favoriteExercises.toArray()) referenced.add(f.exerciseId);
+          for (const t of await db.templates.toArray()) for (const te of t.exercises) referenced.add(te.exerciseId);
+          const stale = (await db.exercises.where('source').anyOf('volumex', 'nuo').primaryKeys()).filter(
+            (id) => !newIds.has(id) && !referenced.has(id),
+          );
+          await db.exercises.bulkDelete(stale);
+          await db.exercises.bulkPut(items);
+        });
+      },
       async list(filter) {
         const favs = new Set((await db.favoriteExercises.toArray()).map((f) => f.exerciseId));
         let coll = db.exercises.toCollection();

@@ -58,7 +58,7 @@ const TABLES = Object.keys(SCHEMA) as (keyof BackupData)[];
 const ENUMS: Partial<Record<keyof BackupData, Record<string, string[]>>> = {
   exercises: { source: ['custom'], trackingType: ['strength', 'cardio', 'stretch'] },
   settings: { weightUnit: ['kg', 'lb'], loadUnit: ['kg', 'lb'] },
-  sessions: { mode: ['gear', 'travel', 'backfill'] },
+  sessions: { mode: ['normal', 'gear', 'travel', 'backfill'] },
 };
 
 function typeOk(v: unknown, t: string): boolean {
