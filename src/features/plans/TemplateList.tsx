@@ -10,7 +10,7 @@ import { Skeleton } from '../../components/Skeleton';
 import type { Template } from '../../data/types';
 import { ExercisePicker } from '../exercises/ExercisePicker';
 import { NameDialog } from './NameDialog';
-import { formatCreated, moveItem, reorderStamps, TEMPLATE_COLORS } from './planLogic';
+import { formatCreated, moveItem, TEMPLATE_COLORS } from './planLogic';
 import type { TemplateDetailTarget } from './TemplateDetail';
 import { useExerciseNames } from './useExerciseNames';
 
@@ -41,12 +41,17 @@ export function TemplateList({ onOpen }: { onOpen: (target: TemplateDetailTarget
     }
   };
 
-  const move = (from: number, to: number) =>
+  /**
+   * 依 id 與方向移動：先讀「資料庫最新」的清單再算位置，不信畫面上可能過期的 index
+   * （連點時畫面可能還沒重繪，曾導致第二下把順序弄回去）。順序存在 template.order，不再動 createdAt。
+   */
+  const move = (id: string, delta: -1 | 1) =>
     guard(async () => {
-      if (to < 0 || to >= templates.length) return;
-      const next = moveItem(templates, from, to);
-      // 資料模型沒有 order 欄位：以交換 createdAt 表達順序（清單依 createdAt 排序）
-      for (const s of reorderStamps(templates, next)) await repos.templates.update(s.id, { createdAt: s.createdAt });
+      const fresh = await repos.templates.list();
+      const from = fresh.findIndex((t) => t.id === id);
+      const to = from + delta;
+      if (from < 0 || to < 0 || to >= fresh.length) return;
+      await repos.templates.reorder(moveItem(fresh, from, to).map((t) => t.id));
       invalidate();
     });
 
@@ -105,16 +110,16 @@ export function TemplateList({ onOpen }: { onOpen: (target: TemplateDetailTarget
                           title="按上下方向鍵調整順序"
                           disabled={!!q}
                           onKeyDown={(e) => {
-                            if (e.key === 'ArrowUp') (e.preventDefault(), move(idx, idx - 1));
-                            else if (e.key === 'ArrowDown') (e.preventDefault(), move(idx, idx + 1));
+                            if (e.key === 'ArrowUp') (e.preventDefault(), move(t.id, -1));
+                            else if (e.key === 'ArrowDown') (e.preventDefault(), move(t.id, 1));
                           }}
                         >
                           <span class="plans-grip" aria-hidden="true" />
                         </button>
-                        <button type="button" class="plans-act" aria-label={`上移 ${t.name}`} disabled={!!q || idx === 0} onClick={() => move(idx, idx - 1)}>
+                        <button type="button" class="plans-act" aria-label={`上移 ${t.name}`} disabled={!!q || idx === 0} onClick={() => move(t.id, -1)}>
                           <span class="plans-rot-up"><Icon name="chevron-right" size={22} /></span>
                         </button>
-                        <button type="button" class="plans-act" aria-label={`下移 ${t.name}`} disabled={!!q || idx === templates.length - 1} onClick={() => move(idx, idx + 1)}>
+                        <button type="button" class="plans-act" aria-label={`下移 ${t.name}`} disabled={!!q || idx === templates.length - 1} onClick={() => move(t.id, 1)}>
                           <span class="plans-rot-down"><Icon name="chevron-right" size={22} /></span>
                         </button>
                         <button type="button" class="plans-act plans-act--text" aria-label={`預覽 ${t.name}`} onClick={() => setPreviewing(t)}>預覽</button>

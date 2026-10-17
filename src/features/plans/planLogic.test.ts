@@ -1,18 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type { Template } from '../../data/types';
-import { isTravelPlan, modeForPlan, moveItem, reorderStamps } from './planLogic';
+import { moveItem, reorderStamps } from './planLogic';
 
 const tpl = (id: string, createdAt: number): Template => ({ id, name: id, color: '#000', exercises: [], createdAt });
 
 describe('planLogic', () => {
-  it('名稱含「出差」視為出差版', () => {
-    expect(isTravelPlan('出差版')).toBe(true);
-    expect(isTravelPlan('出差用 B 計畫')).toBe(true);
-    expect(isTravelPlan('器材版')).toBe(false);
-    expect(modeForPlan('出差版')).toBe('travel');
-    expect(modeForPlan('器材版')).toBe('gear');
-  });
-
   it('moveItem 不改原陣列、越界回傳副本', () => {
     const a = [1, 2, 3];
     expect(moveItem(a, 0, 2)).toEqual([2, 3, 1]);

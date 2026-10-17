@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { acsmWalkRunMet } from '../../domain/burn';
 import type { SetRecord } from '../../domain/types';
 import {
-  EMPTY_VALUES, buildPrLabel, displayToKg, estimateBurn, fmtNum, isComplete, kgToDisplay, toSetFields, valuesFromSet,
+  EMPTY_VALUES, buildPrLabel, displayToKg, fmtNum, isComplete, kgToDisplay, toSetFields, valuesFromSet,
 } from './model';
 
 const v = (p: Partial<typeof EMPTY_VALUES>) => ({ ...EMPTY_VALUES, ...p });
@@ -49,29 +49,6 @@ describe('欄位與資料列互轉', () => {
     expect(fmtNum(60)).toBe('60');
     expect(fmtNum(53.3333)).toBe('53.3');
     expect(fmtNum(12345)).toBe('12,345');
-  });
-});
-
-describe('estimateBurn', () => {
-  it('重訓無計時：每組 3 分鐘 × MET × 體重', () => {
-    const sets = Array.from({ length: 5 }, () => ({ kind: 'strength' as const, exerciseName: '槓鈴臥推' }));
-    expect(estimateBurn({ sets, weightKg: 70, metStrength: 5 })).toBe(88); // 5 × 70 × 0.25h = 87.5
-  });
-  it('有計時用計時（扣掉有氧時間）；有氧用 ACSM', () => {
-    const sets = [
-      { kind: 'strength' as const, exerciseName: '槓鈴臥推' },
-      { kind: 'cardio' as const, exerciseName: '跑步', durationSec: 1800, speed: 8, incline: 0 },
-    ];
-    const run = Math.round(acsmWalkRunMet({ speedKmh: 8, inclinePct: 0 }) * 70 * 0.5);
-    const lift = Math.round(5 * 70 * (1800 / 3600)); // 計時 3600 秒 − 有氧 1800 秒 = 30 分
-    expect(estimateBurn({ sets, weightKg: 70, metStrength: 5, timerSeconds: 3600 })).toBe(run + lift);
-  });
-  it('沒速度的有氧查 MET 表（橢圓機 5.0）', () => {
-    const sets = [{ kind: 'cardio' as const, exerciseName: '橢圓機', durationSec: 1200 }];
-    expect(estimateBurn({ sets, weightKg: 60, metStrength: 5 })).toBe(Math.round(5 * 60 * (1 / 3)));
-  });
-  it('沒有體重回 null', () => {
-    expect(estimateBurn({ sets: [{ kind: 'strength', exerciseName: 'x' }], weightKg: undefined, metStrength: 5 })).toBeNull();
   });
 });
 

@@ -1,11 +1,7 @@
 /** 歷史畫面用的純函式：全部由 SetRecord 即時計算，不存快取。 */
 import type { BodyMetric, Exercise } from '../../data/types';
-import { acsmWalkRunMet, burnKcal, CARDIO_MET_TABLE, strengthMinutes } from '../../domain/burn';
 import { e1rm, num } from '../../domain/strength';
 import type { DateStr, SetRecord } from '../../domain/types';
-
-/** 有氧動作不在 MET 表、也沒有速度時使用的預設 MET。 */
-export const CARDIO_MET_DEFAULT = 6;
 
 const r2 = (n: number) => Math.round(n * 100) / 100;
 
@@ -48,32 +44,6 @@ export function e1rmSeries(sets: SetRecord[], exerciseId: string): E1rmPoint[] {
     best = Math.max(best, p.e1rm);
   }
   return out;
-}
-
-/** 某日消耗（kcal，整數）。體重缺回 null；只有伸展或無紀錄回 0。 */
-export function dayBurnKcal(a: {
-  sets: SetRecord[];
-  exercises: Map<string, Exercise>;
-  weightKg: number | null | undefined;
-  metStrength: number;
-}): number | null {
-  const strengthCount = a.sets.filter((s) => s.kind === 'strength').length;
-  const cardio = a.sets.filter((s) => s.kind === 'cardio');
-  if (strengthCount === 0 && cardio.length === 0) return 0;
-  if (a.weightKg == null || !(a.weightKg > 0)) return null;
-  let total = 0;
-  if (strengthCount > 0) {
-    total += burnKcal({ met: a.metStrength, weightKg: a.weightKg, minutes: strengthMinutes({ setCount: strengthCount }) }) ?? 0;
-  }
-  for (const s of cardio) {
-    const minutes = num(s.durationSec) / 60;
-    const met =
-      num(s.speed) > 0
-        ? acsmWalkRunMet({ speedKmh: num(s.speed), inclinePct: num(s.incline) })
-        : CARDIO_MET_TABLE.find((t) => s.exerciseId.includes(t.id))?.met ?? CARDIO_MET_DEFAULT;
-    total += burnKcal({ met, weightKg: a.weightKg, minutes }) ?? 0;
-  }
-  return total;
 }
 
 /** 由動作 category 彙整肌群（去重、保留出現順序）。 */

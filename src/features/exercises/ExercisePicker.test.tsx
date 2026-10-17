@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/preact';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { loadBundledExercises } from '../../data/exercise-source';
@@ -118,7 +120,8 @@ describe('ExercisePicker 最愛與自訂動作', () => {
       await waitFor(() => expect(count()).toContain(`${1 - i} 個`));
     }
     await screen.findByText('這個分類還沒有最愛');
-    expect(screen.getByRole('button', { name: '＋新增自訂動作' })).toBeTruthy();
+    // 標頭已有「新增自訂動作」，空狀態不再重複同一顆按鈕
+    expect(screen.getAllByRole('button', { name: /新增自訂動作/ })).toHaveLength(1);
   });
 
   it('新增自訂動作：以目前分頁為分類，之後可搜尋', async () => {
@@ -189,5 +192,51 @@ describe('ExercisePicker 模式', () => {
       expect(i.getAttribute('loading')).toBe('lazy');
       expect(i.getAttribute('src')).toMatch(/^gifs\/.+\.gif$/);
     }
+  });
+});
+
+describe('ExercisePicker 手機實測修正', () => {
+  const css = readFileSync(join(process.cwd(), 'src/features/exercises/exercises.css'), 'utf8');
+  const rule = (sel: string) => {
+    const at = css.indexOf(`${sel} {`);
+    return at < 0 ? '' : css.slice(at, css.indexOf('}', at));
+  };
+
+  it('multi：完成 (N) 在固定底部列（sticky bottom＋安全區），且保留 aria-label', async () => {
+    await setup({ mode: 'multi' });
+    const btn = screen.getByRole('button', { name: '完成 (0)' });
+    const bar = btn.closest('.exp-donebar');
+    expect(bar).toBeTruthy();
+    expect(bar!.closest('.exp-head')).toBeNull();
+    expect(btn.getAttribute('aria-label')).toBe('完成 (0)');
+    const r = rule('.exp-donebar');
+    expect(r).toMatch(/position:\s*sticky/);
+    expect(r).toMatch(/bottom:\s*0/);
+    expect(r).toContain('safe-area-inset-bottom');
+  });
+
+  it('single：沒有底部完成列', async () => {
+    await setup();
+    expect(document.querySelector('.exp-donebar')).toBeNull();
+  });
+
+  it('搜尋框 opt-out 自動聚焦；新增自訂動作的名稱欄則不 opt-out', async () => {
+    await setup();
+    expect(screen.getByLabelText('搜尋動作').getAttribute('data-autofocus')).toBe('false');
+    fireEvent.click(screen.getByRole('button', { name: '新增自訂動作' }));
+    const dialog = await screen.findByRole('dialog');
+    expect(within(dialog).getByLabelText('動作名稱').hasAttribute('data-autofocus')).toBe(false);
+  });
+
+  it('新增自訂動作按鈕只出現一次（含最愛為空、搜尋結果）', async () => {
+    await setup();
+    expect(screen.getAllByRole('button', { name: /新增自訂動作/ })).toHaveLength(1);
+    fireEvent.input(screen.getByLabelText('搜尋動作'), { target: { value: '臥推' } });
+    await countIs(expectedCount((e) => e.name.includes('臥推')));
+    expect(screen.getAllByRole('button', { name: /新增自訂動作/ })).toHaveLength(1);
+  });
+
+  it('長名稱截斷（ellipsis）', () => {
+    expect(rule('.exp-card__name')).toContain('text-overflow: ellipsis');
   });
 });

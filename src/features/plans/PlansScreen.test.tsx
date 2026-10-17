@@ -71,14 +71,21 @@ describe('週計畫', () => {
     expect(within(badges[0].closest('li') as HTMLElement).getByText('器材版')).toBeTruthy();
   });
 
-  it('切換啟用週計畫：寫入 repo 並同步模式（出差版 -> 出差、器材版 -> 器材）', async () => {
+  it('切換啟用週計畫：只寫入 repo，沒有「目前模式」文字、也不再跟著名稱切換模式', async () => {
     await setup();
-    fireEvent.click(await screen.findByRole('button', { name: '啟用 出差版' }));
+    expect(await screen.findByRole('button', { name: '啟用 出差版' })).toBeTruthy();
+    expect(screen.queryByText(/目前模式/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '啟用 出差版' }));
     await waitFor(async () => expect((await repos.plans.getActive())?.id).toBe(fake.planIds.travel));
-    expect(await screen.findByText('目前模式：出差模式')).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: '啟用 器材版' }));
     await waitFor(async () => expect((await repos.plans.getActive())?.id).toBe(fake.planIds.gear));
-    expect(await screen.findByText('目前模式：器材模式')).toBeTruthy();
+    expect(screen.queryByText(/目前模式|器材模式|出差模式/)).toBeNull();
+  });
+
+  it('沒有週計畫時的說明與命名提示是中性文案（不提器材版／出差版）', async () => {
+    await setup({ seed: false });
+    expect(await screen.findByText(/不同情境的週計畫/)).toBeTruthy();
+    expect(screen.queryByText(/器材版、出差版/)).toBeNull();
   });
 
   it('七列週一到週日，顯示對應課表或休息，今天高亮並附「今天」', async () => {
@@ -358,7 +365,7 @@ describe('開始訓練', () => {
     expect(sessions).toHaveLength(1);
     expect(sessions[0].templateId).toBe(fake.templateIds.legs);
     expect(sessions[0].planId).toBe(fake.planIds.gear);
-    expect(sessions[0].mode).toBe('gear');
+    expect(sessions[0].mode).toBe('normal');
     expect(sessions[0].endedAt).toBeUndefined();
   });
 

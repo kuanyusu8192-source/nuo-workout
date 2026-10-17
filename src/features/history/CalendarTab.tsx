@@ -1,13 +1,13 @@
 import { useMemo, useState } from 'preact/hooks';
 import { useAppState, useRepoQuery } from '../../app/context';
 import { Button, Icon, IconButton } from '../../components';
-import { applyBurnOverride } from '../../domain/burn';
 import { weekdayOf } from '../../domain/dates';
 import { daySummary, streakWeeks, trainingDays } from '../../domain/stats';
 import type { DateStr, SetRecord } from '../../domain/types';
 import type { Exercise } from '../../data/types';
 import { gate } from './common';
-import { dayBurnKcal, fmt1, fmtInt, muscleGroups, weightOn } from './logic';
+import { loadBurn } from '../diet/dietData';
+import { fmt1, fmtInt, muscleGroups } from './logic';
 
 const HEADS = ['一', '二', '三', '四', '五', '六', '日'];
 const pad = (n: number) => String(n).padStart(2, '0');
@@ -34,36 +34,26 @@ export function CalendarTab() {
   const [month, setMonth] = useState(today.slice(0, 7));
   const [selected, setSelected] = useState<DateStr>();
   const q = useRepoQuery(async (r) => {
-    const [sets, exList, metrics, profile, settings] = await Promise.all([
-      r.sets.listAllAsSetRecords(), r.exercises.list(), r.bodyMetrics.list(), r.profile.get(), r.settings.get(),
-    ]);
-    // 本月（以今天為準）每個訓練日的手動消耗覆寫
-    const overrides = new Map<DateStr, number>();
+    const [sets, exList] = await Promise.all([r.sets.listAllAsSetRecords(), r.exercises.list()]);
+    // 本月每個訓練日的消耗：與飲食頁、今日紀錄同一條算法（loadBurn → estimateDayBurn，含手動覆寫）
     const thisMonth = today.slice(0, 7);
+    const burns = new Map<DateStr, number | null>();
     await Promise.all(
       [...new Set(sets.filter((s) => s.date.startsWith(thisMonth)).map((s) => s.date))].map(async (d) => {
-        const o = await r.burnOverrides.get(d);
-        if (o !== undefined) overrides.set(d, o);
+        burns.set(d, (await loadBurn(r, d)).effective);
       }),
     );
-    return { sets, exercises: new Map<string, Exercise>(exList.map((e) => [e.id, e])), metrics, profile, settings, overrides };
+    return { sets, exercises: new Map<string, Exercise>(exList.map((e) => [e.id, e])), burns };
   }, [today]);
 
   const days = useMemo(() => (q.data ? groupByDate(q.data.sets) : new Map<DateStr, SetRecord[]>()), [q.data]);
   const g = gate(q);
   if (g) return g;
-  const { sets, exercises, metrics, profile, settings, overrides } = q.data!;
-  const burnFor = (d: DateStr) =>
-    applyBurnOverride(
-      dayBurnKcal({ sets: days.get(d) ?? [], exercises, weightKg: weightOn(metrics, d, profile?.weightKg), metStrength: settings.metStrength }),
-      overrides.get(d),
-    );
+  const { sets, exercises, burns: burnByDay } = q.data!;
 
   // 本月總消耗：各訓練日加總；全部缺體重（且無覆寫）才顯示「—」
-  const thisMonth = today.slice(0, 7);
-  const trained = [...days.keys()].filter((d) => d.startsWith(thisMonth));
-  const burns = trained.map(burnFor).filter((v): v is number => v !== null);
-  const monthKcal = trained.length === 0 ? '0' : burns.length === 0 ? '—' : fmtInt(burns.reduce((a, b) => a + b, 0));
+  const burns = [...burnByDay.values()].filter((v): v is number => v !== null);
+  const monthKcal = burnByDay.size === 0 ? '0' : burns.length === 0 ? '—' : fmtInt(burns.reduce((a, b) => a + b, 0));
 
   const [y, m] = month.split('-').map(Number);
   const dim = new Date(y, m, 0).getDate();
@@ -121,7 +111,7 @@ export function CalendarTab() {
         <p class="hist-note">實心點 = 當天有訓練；外框 = 今天</p>
       </section>
 
-      {selected ? <DayCard key={selected} date={selected} sets={days.get(selected) ?? []} exercises={exercises} autoKcal={burnFor(selected)} /> : null}
+      {selected ? <DayCard key={selected} date={selected} sets={days.get(selected) ?? []} exercises={exercises} /> : null}
     </div>
   );
 }
@@ -139,9 +129,9 @@ function Metric({ label, value, unit, icon }: { label: string; value: string; un
   );
 }
 
-function DayCard({ date, sets, exercises, autoKcal }: { date: DateStr; sets: SetRecord[]; exercises: Map<string, Exercise>; autoKcal: number | null }) {
+function DayCard({ date, sets, exercises }: { date: DateStr; sets: SetRecord[]; exercises: Map<string, Exercise> }) {
   const [open, setOpen] = useState(false);
-  const extra = useRepoQuery(async (r) => ({ sessions: await r.sessions.getByDate(date), override: await r.burnOverrides.get(date) }), [date]);
+  const extra = useRepoQuery(async (r) => ({ sessions: await r.sessions.getByDate(date), burn: await loadBurn(r, date) }), [date]);
   const title = `${date}（週${HEADS[(weekdayOf(date) + 6) % 7]}）`;
   if (sets.length === 0) {
     return (
@@ -152,9 +142,9 @@ function DayCard({ date, sets, exercises, autoKcal }: { date: DateStr; sets: Set
     );
   }
   const sum = daySummary(sets, date);
-  const kcal = applyBurnOverride(autoKcal, extra.data?.override);
+  const kcal = extra.data?.burn.effective ?? null;
   const sessionMin = (extra.data?.sessions ?? []).reduce((a, s) => a + (s.endedAt ? (s.endedAt - s.startedAt) / 60000 : 0), 0);
-  const estimated = sessionMin < 1;
+  const estimated = sessionMin < 5; // 與 estimateDayBurn 同門檻：不到 5 分鐘視為沒有真實時長
   const minutes = estimated ? sum.strengthSets * 3 + sum.cardioMinutes : sessionMin;
   const groups = muscleGroups(sets, exercises);
   const perExercise = [...new Set(sets.map((s) => s.exerciseId))].map((id) => ({
@@ -171,7 +161,7 @@ function DayCard({ date, sets, exercises, autoKcal }: { date: DateStr; sets: Set
         {sum.cardioMinutes > 0 ? <> · 有氧 {fmt1(sum.cardioMinutes)} 分鐘</> : null}
       </p>
       <p>時長：{estimated ? '約 ' : ''}{Math.round(minutes)} 分鐘</p>
-      <p>消耗：{kcal === null ? '—（缺體重）' : <><span class="num">{fmtInt(kcal)}</span> kcal</>}</p>
+      <p>消耗：{!extra.data ? '計算中…' : kcal === null ? '—（缺體重）' : <><span class="num">{fmtInt(kcal)}</span> kcal</>}</p>
       <Button variant="ghost" onClick={() => setOpen((o) => !o)} aria-expanded={open}>{open ? '收合詳情' : '查看詳情'}</Button>
       {open ? (
         <div>

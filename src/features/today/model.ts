@@ -1,8 +1,5 @@
 /** 今日訓練的純邏輯：欄位驗證、單位換算、消耗估算、PR 文案。不依賴 DOM 與資料庫。 */
 import type { Exercise, SetRow, TrackingType } from '../../data/types';
-import {
-  CARDIO_MET_TABLE, acsmWalkRunMet, burnKcal, strengthMinutes,
-} from '../../domain/burn';
 import type { PrKind } from '../../domain/pr';
 import { num, peakE1rm, totalVolume } from '../../domain/strength';
 import type { SetKind, SetRecord } from '../../domain/types';
@@ -94,58 +91,6 @@ export function valuesFromSet(s: SetFields, unit: LoadUnit): Values {
 export const fieldsOfRow = (r: SetRow): SetFields => ({
   weightKg: r.weightKg, reps: r.reps, durationSec: r.durationSec, distanceM: r.distanceM, speed: r.speed, incline: r.incline,
 });
-
-// ---------- 消耗估算 ----------
-
-export interface BurnSet {
-  kind: SetKind;
-  exerciseName: string;
-  durationSec?: number;
-  speed?: number;
-  incline?: number;
-}
-
-/** 沒有速度資料、也不在 MET 表時的一般有氧 MET */
-export const CARDIO_MET_FALLBACK = 6;
-
-function cardioMet(s: BurnSet): number {
-  if (s.speed && s.speed > 0) return acsmWalkRunMet({ speedKmh: s.speed, inclinePct: s.incline ?? 0 });
-  const hit = CARDIO_MET_TABLE.find((m) => s.exerciseName.includes(m.name.split('（')[0]));
-  return hit?.met ?? CARDIO_MET_FALLBACK;
-}
-
-/**
- * 整場消耗（kcal，整數）。重訓：metStrength × 體重 × 時間（整場計時扣掉有氧時間；沒計時每組 3 分鐘）。
- * 有氧：ACSM（有速度）或 MET 表。缺體重回 null。
- */
-export function estimateBurn(a: {
-  sets: BurnSet[];
-  timerSeconds?: number;
-  weightKg?: number | null;
-  metStrength: number;
-}): number | null {
-  if (a.weightKg == null || !(a.weightKg > 0)) return null;
-  let total = 0;
-  const cardio = a.sets.filter((s) => s.kind === 'cardio');
-  const cardioSec = cardio.reduce((sum, s) => sum + num(s.durationSec), 0);
-  for (const s of cardio) {
-    const k = burnKcal({ met: cardioMet(s), weightKg: a.weightKg, minutes: num(s.durationSec) / 60 });
-    if (k === null) return null;
-    total += k;
-  }
-  const strengthCount = a.sets.filter((s) => s.kind === 'strength').length;
-  if (strengthCount > 0) {
-    const timer = a.timerSeconds !== undefined && a.timerSeconds - cardioSec > 0 ? a.timerSeconds - cardioSec : undefined;
-    const k = burnKcal({
-      met: a.metStrength,
-      weightKg: a.weightKg,
-      minutes: strengthMinutes({ timerSeconds: timer, setCount: strengthCount }),
-    });
-    if (k === null) return null;
-    total += k;
-  }
-  return total;
-}
 
 // ---------- PR 文案 ----------
 

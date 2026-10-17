@@ -58,7 +58,7 @@ describe('偏好設定', () => {
     await renderSettings();
     expect(within(screen.getByRole('radiogroup', { name: '體重單位' })).getByRole('radio', { name: 'kg' }).getAttribute('aria-checked')).toBe('true');
     expect(within(screen.getByRole('radiogroup', { name: '重量單位' })).getByRole('radio', { name: 'kg' }).getAttribute('aria-checked')).toBe('true');
-    expect(screen.getByTestId('rest-value').textContent).toBe('90 秒');
+    expect(screen.getByTestId('rest-value').textContent).toBe('60 秒'); // 設計預設：組間休息 1:00
     expect((screen.getByRole('switch', { name: /運動消耗/ }) as HTMLInputElement).checked).toBe(true);
     expect((screen.getByRole('switch', { name: /Health Connect/ }) as HTMLInputElement).checked).toBe(false);
     expect((screen.getByLabelText(/重訓 MET/) as HTMLInputElement).value).toBe('5');
@@ -80,12 +80,13 @@ describe('偏好設定', () => {
   it('休息秒數以 15 為步進、限制在 30–300', async () => {
     const { repos } = await renderSettings();
     click('增加休息秒數');
-    await waitFor(() => expect(screen.getByTestId('rest-value').textContent).toBe('105 秒'));
-    expect((await repos.settings.get()).restDefaultSec).toBe(105);
-    click('減少休息秒數');
-    click('減少休息秒數');
+    // 預設 60 秒：+15 → 75；再 −15 兩次 → 45
     await waitFor(() => expect(screen.getByTestId('rest-value').textContent).toBe('75 秒'));
     expect((await repos.settings.get()).restDefaultSec).toBe(75);
+    click('減少休息秒數');
+    click('減少休息秒數');
+    await waitFor(() => expect(screen.getByTestId('rest-value').textContent).toBe('45 秒'));
+    expect((await repos.settings.get()).restDefaultSec).toBe(45);
   });
 
   it('休息秒數到上下限時按鈕停用', async () => {
@@ -222,7 +223,7 @@ describe('體重與體脂', () => {
     await renderSettings({ repos });
     expect((screen.getByLabelText('日期') as HTMLInputElement).value).toBe(TODAY);
     type(/體重（kg）/, '72.5');
-    type(/體脂/, '20.5');
+    type(/^體脂/, '20.5');
     click('新增紀錄');
     await waitFor(async () => expect(await repos.bodyMetrics.list()).toHaveLength(2));
     const added = (await repos.bodyMetrics.list()).find((m) => m.date === TODAY)!;
@@ -250,7 +251,7 @@ describe('體重與體脂', () => {
   it('體脂超出 3–60 時顯示錯誤並擋住新增', async () => {
     await renderSettings();
     type(/體重（kg）/, '70');
-    type(/體脂/, '80');
+    type(/^體脂/, '80');
     expect(screen.getByText('體脂需介於 3–60')).toBeTruthy();
     expect((screen.getByRole('button', { name: '新增紀錄' }) as HTMLButtonElement).disabled).toBe(true);
   });

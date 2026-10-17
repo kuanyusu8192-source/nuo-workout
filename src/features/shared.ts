@@ -1,19 +1,16 @@
 /** 跨功能共用的小型型別與常數。新增共用常數請加在這裡，不要在各畫面各寫一份。 */
-import type { SessionMode } from '../data/types';
 
-/** 應用模式：gear=器材（預設）、travel=出差（紫）、backfill=補記（橘棕） */
-export type AppMode = SessionMode;
+/** 應用模式：normal=一般（預設）、backfill=補記（橘棕） */
+export type AppMode = 'normal' | 'backfill';
 
 export const MODE_LABELS: Record<AppMode, string> = {
-  gear: '器材模式',
-  travel: '出差模式',
+  normal: '一般',
   backfill: '補記模式',
 };
 
 /** 標頭背景用的 CSS 變數（theme.css） */
 export const MODE_COLOR_VAR: Record<AppMode, string> = {
-  gear: 'var(--ink)',
-  travel: 'var(--travel)',
+  normal: 'var(--ink)',
   backfill: 'var(--backfill)',
 };
 

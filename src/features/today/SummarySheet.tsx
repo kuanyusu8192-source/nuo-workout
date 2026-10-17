@@ -2,13 +2,12 @@
 import { useState } from 'preact/hooks';
 import { useAsync, useRepos } from '../../app/context';
 import { Button, EmptyState, IconButton, Sheet } from '../../components';
-import type { Exercise, Session, Settings } from '../../data/types';
-import { applyBurnOverride } from '../../domain/burn';
+import { normalizeSessionMode, type Exercise, type Session, type Settings } from '../../data/types';
+import { estimateDayBurn, type DayBurnSet } from '../../domain/dayburn';
 import { totalVolume } from '../../domain/strength';
 import type { DateStr } from '../../domain/types';
-import {
-  estimateBurn, fmtNum, isBodyweight, isComplete, kgToDisplay, toSetFields, type BurnSet, type LoadUnit, type Values,
-} from './model';
+import { loadDayBurnInputs } from '../diet/dietData';
+import { fmtNum, isBodyweight, isComplete, kgToDisplay, toSetFields, type LoadUnit, type Values } from './model';
 import { RowInputs } from './RowInputs';
 import { hintFor, type CardState } from './workout';
 
@@ -39,8 +38,8 @@ export function SummarySheet({ open, onClose, date, session, settings, cards, ex
   const [editing, setEditing] = useState<string | null>(null);
   const body = useAsync(async () => {
     if (!open) return undefined;
-    const [profile, metric, override] = await Promise.all([repos.profile.get(), repos.bodyMetrics.latest(), repos.burnOverrides.get(date)]);
-    return { weightKg: profile?.weightKg ?? metric?.weightKg, override };
+    // 體重、覆寫、當天其他場次與設定都走和歷史／飲食頁同一條載入路徑
+    return loadDayBurnInputs(repos, date);
   }, [open, repos, date]);
 
   // 只算「填完」的組
@@ -62,20 +61,27 @@ export function SummarySheet({ open, onClose, date, session, settings, cards, ex
   );
   const volumeKg = totalVolume(flatKg.filter((x) => x.ex.trackingType === 'strength').map((x) => x.f));
 
-  const burnSets: BurnSet[] = flatKg.map(({ ex, f }) => ({
+  // 本場用畫面上的組（含尚未存檔的編輯），同一天的其他場次用資料庫內容；演算法與歷史／飲食頁共用 estimateDayBurn
+  const burnSets: DayBurnSet[] = flatKg.map(({ ex, f }) => ({
+    sessionId: session.id,
     kind: ex.trackingType,
     exerciseName: ex.name,
     durationSec: f.durationSec,
     speed: f.speed,
     incline: f.incline,
   }));
-  // 補記的訓練沒有真實的整場時間，改用每組約 3 分鐘估算
-  const timerSeconds =
-    session.mode === 'backfill' ? undefined : Math.max(0, ((session.endedAt ?? Date.now()) - session.startedAt) / 1000);
-  const auto = body.data
-    ? estimateBurn({ sets: burnSets, timerSeconds, weightKg: body.data.weightKg, metStrength: settings.metStrength })
+  const kcal = body.data
+    ? estimateDayBurn({
+        sessions: [
+          ...body.data.sessions.filter((s) => s.id !== session.id),
+          { id: session.id, startedAt: session.startedAt, endedAt: session.endedAt, mode: normalizeSessionMode(session.mode) },
+        ],
+        sets: [...body.data.sets.filter((x) => x.sessionId !== session.id), ...burnSets],
+        weightKg: body.data.weightKg,
+        metStrength: settings.metStrength,
+        override: body.data.override,
+      }).kcal
     : null;
-  const kcal = body.data ? applyBurnOverride(auto, body.data.override) : null;
   const hasAny = done.some(({ rows }) => rows.length > 0);
 
   return (

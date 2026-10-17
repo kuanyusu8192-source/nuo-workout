@@ -1,14 +1,6 @@
 /** 計畫畫面的純函式（無 UI 依賴，方便測試）。 */
 import type { Template, TemplateExercise } from '../../data/types';
 import { toDateStr } from '../../domain/dates';
-import type { AppMode } from '../shared';
-
-/**
- * plans 沒有 mode 欄位，暫以名稱是否含「出差」判斷該週計畫屬於出差版。
- * （P4 若在資料模型加 mode，改這裡一處即可）
- */
-export const isTravelPlan = (name: string): boolean => name.includes('出差');
-export const modeForPlan = (name: string): AppMode => (isTravelPlan(name) ? 'travel' : 'gear');
 
 /** 課表色票（色相沿用 NUO 色票，加幾個輔助色） */
 export const TEMPLATE_COLORS: ReadonlyArray<{ value: string; name: string }> = [

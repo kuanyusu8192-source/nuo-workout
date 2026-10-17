@@ -52,13 +52,14 @@ export function VirtualList<T>({ items, rowHeight, buffer = 6, keyOf, renderRow,
       data-testid={testId}
       onScroll={(e) => setTop((e.currentTarget as HTMLDivElement).scrollTop)}
     >
-      <div class="exp-list__inner" role="list" aria-label={label} style={{ height: items.length * rowHeight }}>
+      {/* Preact 11 不會替數字樣式補 px：必須自己寫單位，否則瀏覽器會忽略（所有列會疊在一起） */}
+      <div class="exp-list__inner" role="list" aria-label={label} style={{ height: `${items.length * rowHeight}px` }}>
         {visible.map((item, i) => (
           <div
             key={keyOf(item)}
             role="listitem"
             class="exp-row"
-            style={{ top: (start + i) * rowHeight, height: rowHeight }}
+            style={{ top: `${(start + i) * rowHeight}px`, height: `${rowHeight}px` }}
           >
             {renderRow(item, start + i)}
           </div>

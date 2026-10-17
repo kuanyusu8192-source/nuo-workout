@@ -4,6 +4,7 @@ import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { Icon } from '../../components/Icon';
 import { Modal } from '../../components/Modal';
+import { HistoryExportSection } from './HistoryExportSection';
 import { TABLE_LABELS, backupFileName, previewBackup, useBackupService, type BackupPreview } from './backupService';
 
 interface PendingImport {
@@ -151,6 +152,8 @@ export function DataSection() {
       {info ? <p class="set-ok" role="status">{info}</p> : null}
       {result ? <p class="set-ok" role="status" aria-label="匯入結果">{result}</p> : null}
       {error ? <p class="set-error" role="alert">{error}</p> : null}
+
+      <HistoryExportSection />
 
       <h3 class="set-subtitle">匯入其他 App 的訓練紀錄</h3>
       <Button fullWidth variant="ghost" disabled>Hevy／Strong 匯入（即將推出）</Button>

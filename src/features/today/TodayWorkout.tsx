@@ -6,11 +6,11 @@
 import { useEffect, useState } from 'preact/hooks';
 import { useAppState, useAsync, useRepoQuery, useRepos } from '../../app/context';
 import { Button, Card, Icon, Sheet, Skeleton, useToast } from '../../components';
-import type { Session } from '../../data/types';
+import { normalizeSessionMode, type Session } from '../../data/types';
 import { weekdayOf } from '../../domain/dates';
 import { planForDate } from '../../domain/plan';
 import { ExercisePicker } from '../exercises/ExercisePicker';
-import { MODE_COLOR_VAR, MODE_LABELS, WEEKDAY_LABELS } from '../shared';
+import { MODE_COLOR_VAR, WEEKDAY_LABELS } from '../shared';
 import { AddExerciseFlow } from './AddExerciseFlow';
 import { WorkoutBody } from './WorkoutBody';
 import { loadWorkout } from './workout';
@@ -31,7 +31,9 @@ export function TodayWorkout() {
   const repos = useRepos();
   const app = useAppState();
   const toast = useToast();
-  const { selectedDate: date, mode, today } = app;
+  const { selectedDate: date, today } = app;
+  const mode = date === today ? 'normal' : 'backfill'; // 補記＝瀏覽的不是今天
+  const [picking, setPicking] = useState(false);
 
   const sessionsQ = useRepoQuery((r) => r.sessions.getByDate(date), [date]);
   const planQ = useRepoQuery(
@@ -69,7 +71,7 @@ export function TodayWorkout() {
     try {
       const s = await repos.sessions.create({
         date,
-        mode,
+        mode: normalizeSessionMode(mode),
         startedAt: Date.now(),
         templateId,
         planId: app.activePlanId ?? undefined,
@@ -104,6 +106,12 @@ export function TodayWorkout() {
   const loading = (sessionsQ.loading && sessionsQ.data === undefined) || (planQ.loading && planQ.data === undefined);
   const plan = planQ.data;
   const template = plan?.template;
+
+  // 完成一場後，若今日課表還沒被任何 session 用過，在完成畫面提供入口
+  const offerTemplate =
+    template && !(sessionsQ.data ?? []).some((s) => s.templateId === template.id) && current?.session.templateId !== template.id
+      ? template
+      : undefined;
   const planText =
     plan === undefined
       ? ''
@@ -117,11 +125,15 @@ export function TodayWorkout() {
     <div class="today" data-mode={mode}>
       <section class="today-head" style={{ borderLeftColor: MODE_COLOR_VAR[mode] }} aria-label="今日資訊">
         <div class="today-head__row">
-          <h2 class="today-head__date">{`${date}（${WEEKDAY_LABELS[weekdayOf(date)]}）`}</h2>
-          <span class="today-head__mode" style={{ borderColor: MODE_COLOR_VAR[mode] }}>{MODE_LABELS[mode]}</span>
+          <h2 class="today-head__date">{`${mode === 'backfill' ? '補記：' : ''}${date}（${WEEKDAY_LABELS[weekdayOf(date)]}）`}</h2>
+          {mode === 'backfill' ? (
+            <Button variant="ghost" onClick={() => { setPicking(false); app.setSelectedDate(today); }}>回到今天</Button>
+          ) : (
+            <Button variant="ghost" onClick={() => setPicking((p) => !p)}>補記其他日期</Button>
+          )}
         </div>
         <p class="today-head__plan">{planText}</p>
-        {mode === 'backfill' ? (
+        {mode === 'backfill' || picking ? (
           <div class="today-head__pick">
             <label for="today-backfill-date">補記日期</label>
             <input
@@ -132,7 +144,12 @@ export function TodayWorkout() {
               max={today}
               onInput={(e) => {
                 const v = (e.currentTarget as HTMLInputElement).value;
-                if (v) app.setSelectedDate(v);
+                if (!v || v > today) {
+                  (e.currentTarget as HTMLInputElement).value = date; // 不能選未來
+                  return;
+                }
+                if (v === today) setPicking(false);
+                app.setSelectedDate(v);
               }}
             />
           </div>
@@ -149,6 +166,7 @@ export function TodayWorkout() {
           extraIds={extras?.sessionId === current.session.id ? extras.ids : undefined}
           onFinish={finish}
           onAnother={another}
+          todayTemplate={offerTemplate ? { name: offerTemplate.name, start: () => { another(); void start(offerTemplate.id); } } : undefined}
         />
       ) : (
         <Card>
@@ -190,6 +208,7 @@ function WorkoutLoader(props: {
   extraIds?: string[];
   onFinish(empty: boolean): Promise<void>;
   onAnother(): void;
+  todayTemplate?: { name: string; start(): void };
 }) {
   const repos = useRepos();
   const q = useAsync(() => loadWorkout(repos, props.session, props.extraIds), [repos, props.session.id]);
@@ -202,5 +221,5 @@ function WorkoutLoader(props: {
     );
   }
   if (!q.data) return <Skeleton height={56} lines={3} label="訓練內容載入中" />;
-  return <WorkoutBody session={props.session} loaded={q.data} ghost={props.ghost} onFinish={props.onFinish} onAnother={props.onAnother} />;
+  return <WorkoutBody session={props.session} loaded={q.data} ghost={props.ghost} onFinish={props.onFinish} onAnother={props.onAnother} todayTemplate={props.todayTemplate} />;
 }

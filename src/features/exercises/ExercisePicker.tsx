@@ -89,10 +89,10 @@ export function ExercisePicker({ mode, initialSelectedIds, onSelect, onDone, onC
       <header class="exp-head">
         <IconButton icon="chevron-left" label="返回" onClick={onClose} />
         <h1 class="exp-head__title">選擇動作</h1>
-        <IconButton icon="plus" label="新增自訂動作" onClick={() => setCustomOpen(true)} />
-        {mode === 'multi' ? (
-          <Button variant="success" onClick={() => onDone?.(selected)}>{`完成 (${selected.length})`}</Button>
-        ) : null}
+        {/* 手機實測：只有一個「+」圖示看不懂用途，所以改成帶文字的按鈕 */}
+        <Button variant="ghost" onClick={() => setCustomOpen(true)}>
+          <Icon name="plus" size={20} /> 新增自訂動作
+        </Button>
       </header>
 
       <Field
@@ -102,6 +102,8 @@ export function ExercisePicker({ mode, initialSelectedIds, onSelect, onDone, onC
         onChange={setRawQuery}
         placeholder="例如：槓鈴臥推、bench press"
         autoComplete="off"
+        // Field 會把多餘屬性展開到 <input>；告訴對話框別自動聚焦搜尋框（避免彈出鍵盤）
+        {...({ 'data-autofocus': 'false' } as Record<string, string>)}
       />
 
       <div class="exp-chips" role="group" aria-label="器材篩選">
@@ -128,7 +130,7 @@ export function ExercisePicker({ mode, initialSelectedIds, onSelect, onDone, onC
         {list.loading && !list.data ? (
           <Skeleton height={56} lines={5} />
         ) : favEmpty ? (
-          <EmptyState title="這個分類還沒有最愛" description="點動作右邊的星號收藏，或新增自己的動作。" icon="star" actionLabel="＋新增自訂動作" onAction={() => setCustomOpen(true)} />
+          <EmptyState title="這個分類還沒有最愛" description="點動作右邊的星號收藏，或新增自己的動作。" icon="star" />
         ) : items.length === 0 ? (
           <EmptyState title="找不到符合的動作" description="換個關鍵字，或清除器材篩選。" />
         ) : (
@@ -145,6 +147,13 @@ export function ExercisePicker({ mode, initialSelectedIds, onSelect, onDone, onC
           />
         )}
       </Tabs>
+
+      {mode === 'multi' ? (
+        // 固定在容器底部（Sheet 內以 sticky 貼著可捲動區底緣；路由內貼著視窗底緣），捲動時不會消失
+        <div class="exp-donebar">
+          <Button variant="success" aria-label={`完成 (${selected.length})`} onClick={() => onDone?.(selected)}>{`完成 (${selected.length})`}</Button>
+        </div>
+      ) : null}
 
       <CustomDialog
         open={customOpen}

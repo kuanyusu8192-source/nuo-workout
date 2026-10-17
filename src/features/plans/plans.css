@@ -5,7 +5,6 @@
 .plans-h { margin: 16px 0 var(--gap); font-size: 18px; line-height: 1.3; }
 .plans-hint { margin: 0 0 var(--gap); color: var(--ink-2); font-size: 16px; }
 .plans-error { margin: 0 0 var(--gap); color: var(--danger-600); font-weight: 600; }
-.plans-mode { margin: 8px 0; font-weight: 600; color: var(--ink-2); }
 .plans-saved { margin: 0 0 var(--gap); min-height: 24px; color: var(--success-600); font-weight: 600; }
 
 /* ---------- 週計畫 ---------- */

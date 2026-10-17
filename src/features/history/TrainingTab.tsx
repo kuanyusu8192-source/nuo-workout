@@ -13,8 +13,8 @@ const PERIODS = [
   { value: 'year', label: '年' },
 ] as const;
 const METRICS = [
-  { value: 'volume', label: '重訓 (kg)' },
-  { value: 'cardioMinutes', label: '有氧 (分鐘)' },
+  { value: 'volume', label: '重訓' },
+  { value: 'cardioMinutes', label: '有氧' },
 ] as const;
 const PERIOD_NAME: Record<Period, string> = { week: '本週', month: '本月', year: '今年' };
 

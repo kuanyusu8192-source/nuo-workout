@@ -32,6 +32,8 @@ export interface WorkoutBodyProps {
   onFinish(empty: boolean): Promise<void>;
   /** 完成之後想再練一場 */
   onAnother(): void;
+  /** 完成後仍可開始的今日課表（尚未被任何 session 使用時才有） */
+  todayTemplate?: { name: string; start(): void };
 }
 
 type Picker = { mode: 'add' } | { mode: 'replace'; exerciseId: string } | null;
@@ -42,7 +44,7 @@ const GENERIC_COOLDOWN =
 
 const errMsg = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
-export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother }: WorkoutBodyProps) {
+export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother, todayTemplate }: WorkoutBodyProps) {
   const repos = useRepos();
   const app = useAppState();
   const toast = useToast();
@@ -120,6 +122,8 @@ export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother }: Wor
         patchRow(exerciseId, rowKey, { setId: undefined });
         await repos.sets.remove(id);
         app.invalidate();
+        // 清掉欄位使該動作剩下的列都已存檔時，也要判定
+        if (!silent) await maybeCelebrate(exerciseId);
       }
       return;
     }
@@ -127,6 +131,8 @@ export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother }: Wor
     if (row.setId) {
       await repos.sets.update(row.setId, fields);
       app.invalidate();
+      // 編輯已存的組也可能破紀錄
+      if (!silent) await maybeCelebrate(exerciseId);
       return;
     }
     const saved = await repos.sets.add({
@@ -148,16 +154,23 @@ export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother }: Wor
     await maybeCelebrate(exerciseId);
   }
 
-  /** 該動作所有組都存好後，判定是否創下 PR */
-  async function maybeCelebrate(exerciseId: string): Promise<void> {
+  /**
+   * 判定某動作是否創下 PR 並排入慶祝佇列（同一動作同一場只慶祝一次）。
+   * 平常（allSaved=true）要等該動作所有列都已存檔，才不會在只填第一組時就提早慶祝；
+   * 完成訓練時（allSaved=false）則對已存的組直接判定，空白列不擋。
+   * 觸發點：存新組、更新組、清空欄位、減一組／刪列、按完成訓練。
+   */
+  async function maybeCelebrate(exerciseId: string, allSaved = true): Promise<void> {
     const card = cardsRef.current.find((c) => c.exerciseId === exerciseId);
     const ex = exMapRef.current[exerciseId];
     if (!card || !ex || ex.trackingType !== 'strength' || celebrated.current.has(exerciseId)) return;
-    if (card.rows.length === 0 || !card.rows.every((r) => r.setId)) return;
-    const ids = new Set(card.rows.map((r) => r.setId));
+    if (allSaved && (card.rows.length === 0 || !card.rows.every((r) => r.setId))) return;
+    const ids = new Set(card.rows.flatMap((r) => (r.setId ? [r.setId] : [])));
+    if (ids.size === 0) return;
     const all = await repos.sets.listAllAsSetRecords();
     const current = all.filter((s) => ids.has(s.id));
     if (current.length === 0) return;
+    // 歷史＝其他組（先前日期或同日其他場次），不含這一場正在記錄的組
     const history = all.filter((s) => s.exerciseId === exerciseId && !ids.has(s.id) && s.date <= session.date);
     const res = detectPr(history, current, exerciseId);
     if (!res.isPr) return;
@@ -211,13 +224,15 @@ export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother }: Wor
     if (!card || !ex || index < 0) return;
     const row = card.rows[index];
     commit(cardsRef.current.map((c) => (c.exerciseId === exerciseId ? { ...c, rows: c.rows.filter((r) => r.key !== rowKey) } : c)));
-    if (row.setId) {
-      const id = row.setId;
-      void enqueue(async () => {
+    const id = row.setId;
+    // 減一組／刪列後，若剩下的列都已存檔就判定 PR（例如首次只填 1 組、把其餘空白列減掉）
+    void enqueue(async () => {
+      if (id) {
         await repos.sets.remove(id);
         app.invalidate();
-      });
-    }
+      }
+      await maybeCelebrate(exerciseId);
+    });
     const hadData = !!row.setId || Object.values(row.v).some((x) => x !== null);
     if (hadData) showUndo(`已刪除 ${ex.name} 第${index + 1}組`, () => restoreRow(exerciseId, index, row));
   }
@@ -320,6 +335,8 @@ export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother }: Wor
     setFinishing(true);
     try {
       await chain.current; // 等所有存檔做完再判斷是不是空訓練
+      // 還沒慶祝過的重訓動作逐一判定（依畫面上動作順序），多個破紀錄會排成佇列一張接一張
+      if (!ghost) for (const c of cardsRef.current) await enqueue(() => maybeCelebrate(c.exerciseId, false));
       const empty = !cardsRef.current.some((c) => c.rows.some((r) => r.setId));
       await onFinish(empty);
       return true;
@@ -403,6 +420,7 @@ export function WorkoutBody({ session, loaded, ghost, onFinish, onAnother }: Wor
                 <Icon name="check" size={20} />
                 訓練完成
               </Button>
+              {todayTemplate ? <Button variant="primary" onClick={todayTemplate.start}>{`開始今日課表（${todayTemplate.name}）`}</Button> : null}
               <Button variant="ghost" onClick={onAnother}>再練一場</Button>
             </>
           ) : (

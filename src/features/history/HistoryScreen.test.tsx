@@ -101,7 +101,7 @@ describe('訓練分頁：柱狀圖', () => {
   it('重訓／有氧切換：有氧顯示分鐘', async () => {
     const { container } = show(await seeded());
     await waitFor(() => expect(barValues(container)).toContain('500'));
-    fireEvent.click(screen.getByRole('radio', { name: '有氧 (分鐘)' }));
+    fireEvent.click(screen.getByRole('radio', { name: '有氧' }));
     await waitFor(() => expect(barValues(container)).toEqual(['30']));
     expect(screen.getByRole('img', { name: /有氧/ })).toBeTruthy();
   });

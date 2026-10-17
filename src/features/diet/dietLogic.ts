@@ -5,9 +5,8 @@
  * servings 只是份數；grams 是「每份」實際食用克數；per100g 是每 100g 營養。
  * 這樣其他地方只要加總 meal.kcal 就是當天攝取量，不必再乘份數。
  */
-import type { FavoriteMeal, Meal, SetRow } from '../../data/types';
+import type { FavoriteMeal, Meal } from '../../data/types';
 import { addDays, parseDateStr, toDateStr, weekStart } from '../../domain/dates';
-import { acsmWalkRunMet, burnKcal, strengthMinutes } from '../../domain/burn';
 import { kcalFromMacros } from '../../domain/nutrition';
 import type { DateStr, Macros } from '../../domain/types';
 
@@ -124,39 +123,4 @@ export function shiftMonth(ym: string, delta: number): string {
 export function md(date: DateStr): { m: number; d: number } {
   const [, m, d] = date.split('-').map(Number);
   return { m, d };
-}
-
-// ---------- 運動消耗自動估算 ----------
-
-/** 沒有速度資料的有氧用的保守 MET。 */
-const CARDIO_FALLBACK_MET = 6;
-
-export interface BurnSession {
-  sets: ReadonlyArray<SetRow>;
-  startedAt?: number;
-  endedAt?: number;
-}
-
-/**
- * 當日運動消耗自動估算（kcal，整數）。缺體重（或 <= 0）回 null；沒有訓練回 0。
- * 重訓：有結束時間用整場計時，否則每組 3 分鐘，MET 取設定；
- * 有氧：durationSec，有速度用 ACSM，否則 6 MET；伸展不計。
- */
-export function estimateBurn(a: { weightKg: number | null | undefined; metStrength: number; sessions: ReadonlyArray<BurnSession> }): number | null {
-  if (a.weightKg == null || !(a.weightKg > 0) || !Number.isFinite(a.weightKg)) return null;
-  let total = 0;
-  for (const s of a.sessions) {
-    const strengthSets = s.sets.filter((x) => x.kind === 'strength').length;
-    if (strengthSets > 0) {
-      const timerSeconds = s.endedAt != null && s.startedAt != null && s.endedAt > s.startedAt ? (s.endedAt - s.startedAt) / 1000 : undefined;
-      const minutes = strengthMinutes({ timerSeconds, setCount: strengthSets });
-      total += burnKcal({ met: a.metStrength, weightKg: a.weightKg, minutes }) ?? 0;
-    }
-    for (const x of s.sets) {
-      if (x.kind !== 'cardio' || !(x.durationSec && x.durationSec > 0)) continue;
-      const met = x.speed && x.speed > 0 ? acsmWalkRunMet({ speedKmh: x.speed, inclinePct: x.incline ?? 0 }) : CARDIO_FALLBACK_MET;
-      total += burnKcal({ met, weightKg: a.weightKg, minutes: x.durationSec / 60 }) ?? 0;
-    }
-  }
-  return Math.round(total);
 }

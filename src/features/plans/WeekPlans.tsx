@@ -8,16 +8,15 @@ import { Sheet } from '../../components/Sheet';
 import { Skeleton } from '../../components/Skeleton';
 import type { PlanRow } from '../../data/types';
 import { weekdayOf } from '../../domain/dates';
-import { MODE_LABELS, WEEKDAY_LABELS, WEEK_ORDER } from '../shared';
+import { WEEKDAY_LABELS, WEEK_ORDER } from '../shared';
 import { NameDialog } from './NameDialog';
-import { modeForPlan } from './planLogic';
 
 type NameDlg = { kind: 'new' } | { kind: 'rename'; plan: PlanRow } | null;
 
-/** 週計畫分頁：多套週計畫（器材版／出差版…）、一鍵切換啟用、星期 -> 課表。 */
+/** 週計畫分頁：多套週計畫（不同情境各一套）、一鍵切換啟用、星期 -> 課表。 */
 export function WeekPlans() {
   const repos = useRepos();
-  const { mode, setMode, setActivePlanId, today, invalidate } = useAppState();
+  const { setActivePlanId, today, invalidate } = useAppState();
   const plansQ = useRepoQuery((r) => r.plans.list(), []);
   const tplQ = useRepoQuery((r) => r.templates.list(), []);
   const [viewId, setViewId] = useState<string | null>(null);
@@ -46,8 +45,6 @@ export function WeekPlans() {
   const activate = (plan: PlanRow) =>
     guard(async () => {
       await setActivePlanId(plan.id);
-      // 切換週計畫即切換出差模式；補記模式不被覆蓋（補記是「記到過去的日期」，與器材／出差正交）
-      if (mode !== 'backfill') setMode(modeForPlan(plan.name));
       setViewId(plan.id);
     });
 
@@ -70,17 +67,12 @@ export function WeekPlans() {
     guard(async () => {
       if (nameDlg?.kind === 'rename') {
         await repos.plans.update(nameDlg.plan.id, { name });
-        // 啟用中的計畫改名後，模式要跟著名稱重新判斷
-        if (nameDlg.plan.isActive && mode !== 'backfill') setMode(modeForPlan(name));
       } else {
         const first = plans.length === 0;
         const created = await repos.plans.create({ name, days: { 0: null, 1: null, 2: null, 3: null, 4: null, 5: null, 6: null }, isActive: first });
         setViewId(created.id);
-        // 第一套計畫自動啟用，模式也要跟上
-        if (first) {
-          await setActivePlanId(created.id);
-          if (mode !== 'backfill') setMode(modeForPlan(created.name));
-        }
+        // 第一套計畫自動啟用
+        if (first) await setActivePlanId(created.id);
       }
       invalidate();
       setNameDlg(null);
@@ -88,11 +80,10 @@ export function WeekPlans() {
 
   return (
     <div class="plans-weeks">
-      <p class="plans-mode" role="status">{`目前模式：${MODE_LABELS[mode]}`}</p>
       {error ? <p class="plans-error" role="alert">{error}</p> : null}
 
       {plans.length === 0 ? (
-        <EmptyState icon="calendar" title="還沒有週計畫" description="週計畫決定每週哪一天練哪個課表，可以建立器材版、出差版。" actionLabel="新增週計畫" onAction={() => setNameDlg({ kind: 'new' })} />
+        <EmptyState icon="calendar" title="還沒有週計畫" description="週計畫決定每週哪一天練哪個課表，可以建立不同情境的週計畫，再一鍵切換啟用。" actionLabel="新增週計畫" onAction={() => setNameDlg({ kind: 'new' })} />
       ) : (
         <>
           <ul class="plans-list" aria-label="週計畫清單">
@@ -165,7 +156,7 @@ export function WeekPlans() {
         fieldLabel="計畫名稱"
         initialValue={nameDlg?.kind === 'rename' ? nameDlg.plan.name : ''}
         submitLabel="儲存"
-        emptyMessage="請輸入計畫名稱，例如「器材版」「出差版」"
+        emptyMessage="請輸入計畫名稱，例如「平日版」「假日版」"
         onSubmit={submitName}
         onClose={() => setNameDlg(null)}
       />

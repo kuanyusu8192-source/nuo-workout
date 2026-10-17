@@ -136,7 +136,7 @@ function RecordTab({ sets }: { sets: SetRecord[] }) {
           </ul>
         </section>
       ) : (
-        <EmptyState title="還沒有此動作的紀錄" description="到今日訓練加入這個動作並完成一組，就會出現在這裡。" />
+        <EmptyState title="還沒有此動作的紀錄" description="在今日訓練記錄這個動作，完成一組就會出現在這裡。" />
       )}
       {/* 記錄統一在「今日訓練」，這裡只導引；「從詳情直接加入今日」的接線由 P4 決定 */}
       <a class="nuo-btn nuo-btn--primary exp-linkbtn" href={href(paths.today)}>前往今日訓練</a>

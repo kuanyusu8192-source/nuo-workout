@@ -19,8 +19,10 @@ describe('共用常數與動作庫一致', () => {
     for (const e of list) expect(EQUIPMENT_ALL as readonly string[]).toContain(e.equipment);
     expect(equipmentLabel('')).toBe('無器材');
   });
-  it('三種模式都有標籤與色彩變數', () => {
-    for (const m of ['gear', 'travel', 'backfill'] as const) {
+  it('兩種模式都有標籤與色彩變數，沒有 gear／travel 殘留', () => {
+    expect(Object.keys(MODE_LABELS).sort()).toEqual(['backfill', 'normal']);
+    expect(Object.keys(MODE_COLOR_VAR).sort()).toEqual(['backfill', 'normal']);
+    for (const m of ['normal', 'backfill'] as const) {
       expect(MODE_LABELS[m]).toBeTruthy();
       expect(MODE_COLOR_VAR[m]).toMatch(/^var\(--/);
     }

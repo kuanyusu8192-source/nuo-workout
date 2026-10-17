@@ -93,6 +93,8 @@ describe('ExerciseDetail 紀錄', () => {
   it('沒有紀錄時有說明', async () => {
     await setup(BENCH, 'record', false);
     await screen.findByText('還沒有此動作的紀錄');
+    expect(screen.getByText(/在今日訓練記錄這個動作/)).toBeTruthy();
+    expect(screen.getByRole('link', { name: '前往今日訓練' })).toBeTruthy();
   });
 });
 

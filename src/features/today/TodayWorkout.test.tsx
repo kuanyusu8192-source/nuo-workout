@@ -92,11 +92,11 @@ async function addExercise(id: string, name: string, opts: { alreadyStarted?: bo
 }
 
 describe('開始訓練', () => {
-  it('標頭顯示日期、模式與今日課表；從課表開始會建立今日 session 並帶入動作與空白組', async () => {
+  it('標頭顯示日期與今日課表（沒有器材模式徽章）；從課表開始會建立今日 session 並帶入動作與空白組', async () => {
     const repos = await fakeRepos();
     renderToday(repos);
     expect(await screen.findByText(/2026-10-16/)).toBeTruthy();
-    expect(screen.getByText('器材模式')).toBeTruthy();
+    expect(screen.queryByText(/器材模式|出差模式/)).toBeNull(); // 器材／出差模式徽章已移除
 
     fireEvent.click(await screen.findByRole('button', { name: '開始訓練（腿與有氧）' }));
     const deadlift = await screen.findByRole('article', { name: '槓鈴硬舉' });
@@ -105,7 +105,7 @@ describe('開始訓練', () => {
     expect(screen.getByRole('article', { name: '跑步' })).toBeTruthy();
 
     const s = await todaySession(repos);
-    expect(s.mode).toBe('gear');
+    expect(s.mode).toBe('normal');
     expect(s.templateId).toBeTruthy();
     expect(await repos.sets.listBySession(s.id)).toHaveLength(0); // 空白組不存
     // 歷史／教學／更多
@@ -354,6 +354,99 @@ describe('PR 與慶祝頁', () => {
   });
 });
 
+describe('PR 判定漏洞（實測迴歸）', () => {
+  const PR = '恭喜打破 PR！';
+  const fillSet = (card: HTMLElement, no: number, w: string, r: string) => {
+    fill(card, `第${no}組 重量（kg）`, w);
+    fill(card, `第${no}組 次數`, r);
+  };
+
+  it('首次只填 1 組、事後把其他空白列減掉 → 慶祝（減一組也要判定）', async () => {
+    const repos = await emptyRepos();
+    renderToday(repos);
+    const card = await addExercise('vx-0025', '槓鈴臥推');
+    fillSet(card, 1, '40', '10');
+    await waitFor(async () => expect(await setsOf(repos)).toHaveLength(1));
+    await settle();
+    expect(screen.queryByText(PR)).toBeNull(); // 還有兩列空白，先不判定
+    click('減一組', card);
+    click('減一組', card);
+    expect(await screen.findByText(PR)).toBeTruthy();
+  });
+
+  it('首次只填 1 組、留著空白列直接按「完成訓練」→ 慶祝（完成時逐一判定）', async () => {
+    const repos = await emptyRepos();
+    renderToday(repos);
+    const card = await addExercise('vx-0025', '槓鈴臥推');
+    fillSet(card, 1, '40', '10');
+    await waitFor(async () => expect(await setsOf(repos)).toHaveLength(1));
+    click('完成訓練');
+    expect(await screen.findByText(PR)).toBeTruthy();
+    expect(screen.getByText(/槓鈴臥推 新高：最大重量 40 kg/)).toBeTruthy();
+    await waitFor(async () => expect((await todaySession(repos)).endedAt).toBeDefined());
+  });
+
+  it('已慶祝過的動作，按完成訓練不會再慶祝一次', async () => {
+    const repos = await emptyRepos();
+    renderToday(repos);
+    const card = await addExercise('vx-0025', '槓鈴臥推');
+    click('減一組', card);
+    click('減一組', card);
+    fillSet(card, 1, '40', '10');
+    fireEvent.click(await screen.findByRole('dialog'));
+    await waitFor(() => expect(screen.queryByText(PR)).toBeNull());
+    click('完成訓練');
+    await screen.findByRole('button', { name: '訓練完成' });
+    await settle();
+    expect(screen.queryByText(PR)).toBeNull();
+  });
+
+  it('沒破紀錄：減列與完成訓練都不顯示慶祝', async () => {
+    const repos = await fakeRepos();
+    renderToday(repos);
+    const card = await addExercise('vx-0025', '槓鈴臥推');
+    fillSet(card, 1, '20', '5');
+    await waitFor(async () => expect(await setsOf(repos)).toHaveLength(1));
+    click('減一組', card);
+    click('減一組', card);
+    click('完成訓練');
+    await screen.findByRole('button', { name: '訓練完成' });
+    await settle();
+    expect(screen.queryByText(PR)).toBeNull();
+  });
+
+  it('編輯已存的組使其破紀錄 → 慶祝（更新也要判定）', async () => {
+    const repos = await fakeRepos();
+    renderToday(repos);
+    const card = await addExercise('vx-0025', '槓鈴臥推');
+    click('減一組', card);
+    click('減一組', card);
+    fillSet(card, 1, '20', '5');
+    await waitFor(async () => expect(await setsOf(repos)).toHaveLength(1));
+    await settle();
+    expect(screen.queryByText(PR)).toBeNull();
+    fill(card, '第1組 重量（kg）', '200');
+    expect(await screen.findByText(PR)).toBeTruthy();
+  });
+
+  it('多個動作都破紀錄：完成時依序一張一張顯示，點擊後換下一張', async () => {
+    const repos = await emptyRepos();
+    renderToday(repos);
+    const bench = await addExercise('vx-0025', '槓鈴臥推');
+    const dead = await addExercise('vx-0032', '槓鈴硬舉', { alreadyStarted: true });
+    fillSet(bench, 1, '40', '10');
+    fillSet(dead, 1, '60', '5');
+    await waitFor(async () => expect(await setsOf(repos)).toHaveLength(2));
+    click('完成訓練');
+    expect(await screen.findByText(/槓鈴臥推 新高/)).toBeTruthy();
+    expect(screen.queryByText(/槓鈴硬舉 新高/)).toBeNull();
+    fireEvent.click(screen.getByRole('dialog'));
+    expect(await screen.findByText(/槓鈴硬舉 新高/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('dialog'));
+    await waitFor(() => expect(screen.queryByText(PR)).toBeNull());
+  });
+});
+
 describe('完成訓練', () => {
   it('空訓練不留紀錄，按鈕變已完成', async () => {
     const repos = await fakeRepos();
@@ -490,7 +583,7 @@ describe('補記模式', () => {
     const repos = await emptyRepos();
     renderToday(repos, { mode: 'backfill', date: '2026-10-10' });
     expect(await screen.findByText(/2026-10-10/)).toBeTruthy();
-    expect(screen.getByText('補記模式')).toBeTruthy();
+    expect(screen.getByText(/補記：2026-10-10/)).toBeTruthy();
     const card = await addExercise('vx-0025', '槓鈴臥推');
     fill(card, '第1組 重量（kg）', '40');
     fill(card, '第1組 次數', '10');
@@ -499,5 +592,104 @@ describe('補記模式', () => {
     expect(s.mode).toBe('backfill');
     await waitFor(async () => expect(await repos.sets.listBySession(s.id)).toHaveLength(1));
     expect(await repos.sessions.getByDate(TODAY)).toHaveLength(0);
+  });
+});
+
+
+describe('補記入口', () => {
+  const pickDate = (v: string) => {
+    const input = screen.getByLabelText('補記日期') as HTMLInputElement;
+    input.value = v;
+    fireEvent.input(input);
+  };
+
+  it('按「補記其他日期」出現日期選擇（max＝今天）；選過去日期進入補記，回到今天離開', async () => {
+    const repos = await emptyRepos();
+    renderToday(repos);
+    expect(screen.queryByLabelText('補記日期')).toBeNull();
+    fireEvent.click(await screen.findByRole('button', { name: '補記其他日期' }));
+    expect((screen.getByLabelText('補記日期') as HTMLInputElement).max).toBe(TODAY);
+    pickDate('2026-10-10');
+    expect(await screen.findByText('補記：2026-10-10（六）')).toBeTruthy();
+    expect(document.querySelector('.today')?.getAttribute('data-mode')).toBe('backfill');
+    fireEvent.click(screen.getByRole('button', { name: '回到今天' }));
+    expect(await screen.findByText(`${TODAY}（五）`)).toBeTruthy();
+    expect(document.querySelector('.today')?.getAttribute('data-mode')).toBe('normal');
+    expect(screen.queryByRole('button', { name: '回到今天' })).toBeNull();
+  });
+
+  it('不能選未來日期；選回今天等於離開補記', async () => {
+    const repos = await emptyRepos();
+    renderToday(repos);
+    fireEvent.click(await screen.findByRole('button', { name: '補記其他日期' }));
+    pickDate('2026-10-20');
+    await settle();
+    expect(screen.queryByText(/補記：/)).toBeNull();
+    pickDate('2026-10-10');
+    await screen.findByText(/補記：2026-10-10/);
+    pickDate('2026-10-25');
+    await settle();
+    expect(screen.getByText(/補記：2026-10-10/)).toBeTruthy();
+    pickDate(TODAY);
+    await waitFor(() => expect(screen.queryByText(/補記：/)).toBeNull());
+  });
+
+  it('補記日的訓練寫進該日；該日已有 session 就接續顯示', async () => {
+    const repos = await emptyRepos();
+    const old = await repos.sessions.create({ date: '2026-10-08', mode: 'backfill', startedAt: 1 });
+    await repos.sets.add({ sessionId: old.id, exerciseId: 'vx-0025', setIndex: 0, kind: 'strength', weightKg: 50, reps: 5, createdAt: 2 });
+    renderToday(repos);
+    fireEvent.click(await screen.findByRole('button', { name: '補記其他日期' }));
+    pickDate('2026-10-08');
+    expect(await screen.findByRole('article', { name: '槓鈴臥推' })).toBeTruthy();
+    expect(await repos.sessions.getByDate('2026-10-08')).toHaveLength(1);
+    expect(await repos.sessions.getByDate(TODAY)).toHaveLength(0);
+  });
+
+  it('補記時按「自由訓練」寫入補記日，session.mode 為 backfill', async () => {
+    const repos = await emptyRepos();
+    renderToday(repos);
+    fireEvent.click(await screen.findByRole('button', { name: '補記其他日期' }));
+    pickDate('2026-10-09');
+    await screen.findByText(/補記：2026-10-09/);
+    fireEvent.click(await screen.findByRole('button', { name: '自由訓練' }));
+    await waitFor(async () => expect(await repos.sessions.getByDate('2026-10-09')).toHaveLength(1));
+    expect((await repos.sessions.getByDate('2026-10-09'))[0].mode).toBe('backfill');
+  });
+});
+
+describe('完成後的今日課表入口', () => {
+  async function finishFree(repos: Repos) {
+    renderToday(repos);
+    const card = await addExercise('vx-0025', '槓鈴臥推');
+    fill(card, '第1組 重量（kg）', '40');
+    fill(card, '第1組 次數', '10');
+    await waitFor(async () => expect(await setsOf(repos)).toHaveLength(1));
+    click('完成訓練');
+    await screen.findByRole('button', { name: '訓練完成' });
+  }
+
+  it('今天已完成一場自由訓練、課表未用過 → 顯示「開始今日課表（課表名）」，按下用該課表開新一場', async () => {
+    const repos = await fakeRepos();
+    // fakeData 今天沒有 session（或另一課表）；清掉今天 session 以確保課表未用過
+    for (const s of await repos.sessions.getByDate(TODAY)) await repos.sessions.remove(s.id);
+    await finishFree(repos);
+    fireEvent.click(await screen.findByRole('button', { name: '開始今日課表（腿與有氧）' }));
+    await screen.findByRole('article', { name: '槓鈴硬舉' });
+    const list = await repos.sessions.getByDate(TODAY);
+    expect(list).toHaveLength(2);
+    expect(list.some((s) => s.templateId)).toBe(true);
+  });
+
+  it('今日課表已被用過就不顯示', async () => {
+    const repos = await fakeRepos();
+    for (const s of await repos.sessions.getByDate(TODAY)) await repos.sessions.remove(s.id);
+    renderToday(repos);
+    fireEvent.click(await screen.findByRole('button', { name: '開始訓練（腿與有氧）' }));
+    await screen.findByRole('article', { name: '槓鈴硬舉' });
+    click('結束 & 收操');
+    await screen.findByRole('button', { name: '訓練完成' });
+    expect(screen.queryByRole('button', { name: /^開始今日課表/ })).toBeNull();
+    expect(screen.getByRole('button', { name: '再練一場' })).toBeTruthy();
   });
 });

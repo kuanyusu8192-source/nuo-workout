@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import type { Meal, SetRow } from '../../data/types';
+import type { Meal } from '../../data/types';
 import {
-  autoKcal, convertPer100g, estimateBurn, formatNum, monthCells, scaleMealServings, sumMeals, totalsFor, weekDates,
+  autoKcal, convertPer100g, formatNum, monthCells, scaleMealServings, sumMeals, totalsFor, weekDates,
 } from './dietLogic';
 
 const meal = (over: Partial<Meal> = {}): Meal => ({
@@ -59,33 +59,5 @@ describe('日期', () => {
     expect(cells.filter(Boolean)).toHaveLength(31);
     expect(cells.filter(Boolean).pop()).toBe('2026-10-31');
     expect(cells.length % 7).toBe(0);
-  });
-});
-
-describe('estimateBurn', () => {
-  const set = (over: Partial<SetRow>): SetRow => ({
-    id: 's', sessionId: 'x', exerciseId: 'e', setIndex: 0, kind: 'strength', weightKg: 50, reps: 10, createdAt: 1, ...over,
-  });
-  it('缺體重回 null', () => {
-    expect(estimateBurn({ weightKg: null, metStrength: 5, sessions: [{ sets: [set({})] }] })).toBeNull();
-  });
-  it('重訓無計時：每組 3 分鐘 × MET × 體重', () => {
-    const sets = [0, 1, 2, 3].map((i) => set({ id: `s${i}`, setIndex: i }));
-    expect(estimateBurn({ weightKg: 70, metStrength: 5, sessions: [{ sets }] })).toBe(70);
-  });
-  it('重訓有結束時間：用整場計時', () => {
-    const sets = [set({})];
-    // 60 分鐘 × 5 × 60kg / 60 = 300
-    expect(estimateBurn({ weightKg: 60, metStrength: 5, sessions: [{ sets, startedAt: 0, endedAt: 3600_000 }] })).toBe(300);
-  });
-  it('沒有任何訓練為 0', () => {
-    expect(estimateBurn({ weightKg: 70, metStrength: 5, sessions: [] })).toBe(0);
-  });
-  it('有氧用 durationSec 與速度（ACSM）', () => {
-    const sets = [set({ kind: 'cardio', durationSec: 1800, speed: 10, incline: 0, weightKg: undefined, reps: undefined })];
-    const k = estimateBurn({ weightKg: 70, metStrength: 5, sessions: [{ sets }] });
-    // 10km/h 跑步 ≈ 10.3 MET，30 分鐘、70kg ≈ 360
-    expect(k).toBeGreaterThan(300);
-    expect(k).toBeLessThan(420);
   });
 });

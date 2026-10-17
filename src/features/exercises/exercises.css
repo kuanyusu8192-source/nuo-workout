@@ -6,6 +6,9 @@
 
 /* 晶片列：橫向捲動，不撐破 375px */
 .exp-chips { display: flex; gap: var(--gap); overflow-x: auto; padding-bottom: 4px; }
+/* 橫向捲動列不顯示灰色捲軸（仍可手指滑動；右側被截斷的晶片本身就是可捲動的提示） */
+.exp-chips, .exp-picker .nuo-tabs__list { scrollbar-width: none; -ms-overflow-style: none; }
+.exp-chips::-webkit-scrollbar, .exp-picker .nuo-tabs__list::-webkit-scrollbar { display: none; }
 .exp-chip {
   flex: 0 0 auto;
   min-height: 44px;
@@ -21,6 +24,21 @@
 }
 .exp-chip.is-active { background: var(--primary-600); border-color: var(--primary-600); color: #fff; font-weight: 600; }
 .exp-chip:focus-visible, .exp-card:focus-visible, .exp-fav:focus-visible { outline: 3px solid var(--primary-600); outline-offset: 2px; }
+
+/* 多選「完成 (N)」：sticky 貼底（含安全區），清單本身在上方、不被遮住 */
+.exp-donebar {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  margin-top: auto;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  background: var(--card);
+  border-top: 1px solid var(--line);
+}
+.exp-donebar > * { width: 100%; }
+.nuo-sheet__body .exp-donebar { margin-left: -16px; margin-right: -16px; margin-bottom: -16px; padding-left: 16px; padding-right: 16px; }
 
 .exp-count { margin: 4px 0; font-size: 16px; color: var(--ink-2); }
 

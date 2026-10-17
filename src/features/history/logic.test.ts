@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Exercise } from '../../data/types';
 import type { SetRecord } from '../../domain/types';
-import { dayBurnKcal, e1rmSeries, muscleGroups, strengthExerciseIds, weightOn } from './logic';
+import { e1rmSeries, muscleGroups, strengthExerciseIds, weightOn } from './logic';
 
 let n = 0;
 const s = (date: string, w: number, r: number, ex = 'bench'): SetRecord => ({
@@ -46,27 +46,6 @@ describe('e1rmSeries', () => {
   it('同一天多組取 e1RM 最高的那組', () => {
     const p = e1rmSeries([s('2026-10-01', 40, 10), s('2026-10-01', 60, 3)], 'bench');
     expect(p[0].bestSet).toEqual({ weightKg: 60, reps: 3 });
-  });
-});
-
-describe('dayBurnKcal', () => {
-  it('重訓：每組 3 分鐘 × MET × 體重（4 組 = 12 分鐘 → 5×74×0.2 = 74）', () => {
-    const sets = [1, 2, 3, 4].map(() => s('2026-10-16', 40, 10));
-    expect(dayBurnKcal({ sets, exercises: exMap, weightKg: 74, metStrength: 5 })).toBe(74);
-  });
-  it('缺體重回 null；無紀錄回 0；只有伸展回 0', () => {
-    expect(dayBurnKcal({ sets: [s('2026-10-16', 40, 10)], exercises: exMap, weightKg: null, metStrength: 5 })).toBeNull();
-    expect(dayBurnKcal({ sets: [], exercises: exMap, weightKg: 74, metStrength: 5 })).toBe(0);
-    const st: SetRecord = { id: 'x', exerciseId: 'stretch', date: '2026-10-16', kind: 'stretch', durationSec: 30, createdAt: 1 };
-    expect(dayBurnKcal({ sets: [st], exercises: exMap, weightKg: 74, metStrength: 5 })).toBe(0);
-  });
-  it('有氧：有速度用 ACSM，無速度查表／預設 MET；60 分鐘 70kg 速度 10km/h 約 700+ kcal', () => {
-    const k = dayBurnKcal({ sets: [c('2026-10-16', 3600, { speed: 10 })], exercises: exMap, weightKg: 70, metStrength: 5 })!;
-    // ACSM 10km/h：MET = (0.2×166.67+3.5)/3.5 ≈ 10.76
-    expect(k).toBe(Math.round(((0.2 * (10000 / 60) + 3.5) / 3.5) * 70));
-  });
-  it('有氧無速度且不在表內：預設 6 MET', () => {
-    expect(dayBurnKcal({ sets: [c('2026-10-16', 3600)], exercises: exMap, weightKg: 70, metStrength: 5 })).toBe(420);
   });
 });
 
